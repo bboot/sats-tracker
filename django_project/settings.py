@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     'pages.apps.PagesConfig',
+    'txouts.apps.TxOutsConfig',
 ]
 
 MIDDLEWARE = [
@@ -123,7 +124,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [str(BASE_DIR.joinpath("static"))]
-STATICROOT = str(BASE_DIR.joinpath("staticfiles"))
+STATIC_ROOT = str(BASE_DIR.joinpath("staticfiles"))
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Default primary key field type
