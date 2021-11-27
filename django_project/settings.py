@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
-    'pages.apps.PagesConfig',
     'txouts.apps.TxOutsConfig',
     'node.apps.NodeConfig',
 ]
