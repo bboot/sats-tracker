@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 
 # Create your models here.
 class TxOut(models.Model):
@@ -9,6 +10,7 @@ class TxOut(models.Model):
     amount = models.BigIntegerField()
     # maybe store a spent_tx instead of just a boolean
     spent = models.BooleanField(default=False)
+    owned = models.BooleanField(default=True)
 
     def __str__(self):
         '''
@@ -18,7 +20,11 @@ class TxOut(models.Model):
         spent = ''
         if self.spent:
             spent = ' (spent)'
-        return '[{}..{}] {:,}${}'.format(
+        owned = '(*)'
+        if not self.owned:
+            owned = ''
+        return '{}[{}..{}] {:,}${}'.format(
+            owned,
             self.address[0:4],
             self.address[-6:],
             self.amount,
@@ -37,10 +43,10 @@ class Actor(models.Model):
     counterparty = models.BooleanField(default=True)
 
     def __str__(self):
-        counterparty = ""
-        if self.counterparty:
-            counterparty = "(*)"
-        return f"{counterparty}{self.name}"
+        owned = "(*)"
+        if not self.counterparty:
+            owned = ""
+        return f"{owned}{self.name}"
 
     def get_absolute_url(self):
         return reverse("txout_list", args=[str(self.id)])

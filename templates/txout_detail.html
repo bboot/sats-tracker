@@ -1,4 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="txout-entry">
+    <h2>{{ object.address }} </h2>
+    <p>{{ object.amount }} </p>
+    <p>{{ object.notes }} </p>
+</div>
 {% endblock content %}

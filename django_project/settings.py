@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'pages.apps.PagesConfig',
     'txouts.apps.TxOutsConfig',
+    'node.apps.NodeConfig',
 ]
 
 MIDDLEWARE = [
