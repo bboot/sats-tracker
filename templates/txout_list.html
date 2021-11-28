@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}Addresses{% endblock title %}
+{% block title %}Transactions{% endblock title %}
+
+{% block info %}
+  <div class="info">All the transactions, bro</div>
+{% endblock info %}
 
 {% block content %}
 {% for txout in object_list %}

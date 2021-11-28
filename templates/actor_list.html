@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Actors{% endblock title %}
+
+{% block content %}
+{% for actor in object_list %}
+    <div class="card">
+        <div class="card-header">
+            <span class="font-weight-bold">{{ actor.name }} </span> &middot;
+        </div>
+        <div class="card-body">
+            {{ actor.notes }}
+        </div>
+        <div class="card-footer text-center text-muted">
+            <a href="#">Edit</a>
+        </div>
+    </div>
+    <br />
+{% endfor %}
+{% endblock content %}
+
+
