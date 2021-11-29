@@ -8,6 +8,11 @@
 </head>
 <html>
 <body>
+  <div class="topnav">
+    <a class="active" href="{% url 'node' %}">Node</a>
+    <a href="{% url 'txout_list' %}">Transactions</a>
+    <a href="{% url 'actor_list' %}">Actors</a>
+  </div>
   <div id="mySidenav" class="sidenav">
     <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
     <a href="{% url 'node' %}">Node</a>
@@ -16,12 +21,12 @@
   </div>
 
   <div id="main">
-    <h2 style="font-size:30px;cursor:pointer" onclick="openNav()">&#9776;
+    <h1 onclick="openNav()">&#9776;
       {% block title %}
       {% endblock title %}
-    </h2>
-    {% block info %}
-    {% endblock info %}
+    </h1>
+    {% block heading-info %}
+    {% endblock heading-info %}
   </div>
 
   <script>
@@ -34,7 +39,7 @@
   function closeNav() {
     document.getElementById("mySidenav").style.width = "0";
     //document.getElementById("main").style.marginLeft= "0";
-    document.body.style.backgroundColor = "white";
+    document.body.style.backgroundColor = "#E1ECF9";
   }
   </script>
   {% block content %}

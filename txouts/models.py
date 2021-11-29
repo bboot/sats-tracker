@@ -9,8 +9,13 @@ class TxOut(models.Model):
     txins = models.ManyToManyField("txouts.TxOut", blank=True)
     amount = models.BigIntegerField()
     # maybe store a spent_tx instead of just a boolean
-    spent = models.BooleanField(default=False)
+    spent = models.BooleanField(default=False) # not really needed
     owned = models.BooleanField(default=True)
+    # We want to record the transaction because the address can
+    # show up more than once under different transactions.
+    # Are transactions always 65 chars?
+    # This can be looked up if left blank.
+    transaction = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
         '''
@@ -31,6 +36,9 @@ class TxOut(models.Model):
             spent,
         )
 
+    def fmt_amount(self):
+        return '{:,}'.format(int(self.amount))
+
 
     def get_absolute_url(self):
         return reverse("txout_detail", args=[str(self.id)])
@@ -44,7 +52,7 @@ class Actor(models.Model):
 
     def __str__(self):
         owned = "(*)"
-        if not self.counterparty:
+        if self.counterparty:
             owned = ""
         return f"{owned}{self.name}"
 

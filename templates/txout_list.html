@@ -1,26 +1,43 @@
 {% extends "base.html" %}
+{% load static %} 
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/list.css' %}"/>
+{% endblock head %}
 
 {% block title %}Transactions{% endblock title %}
 
-{% block info %}
-  <div class="info">All the transactions, bro</div>
-{% endblock info %}
+{% block heading-info %}
+  <div class="heading-info">All the transactions, bro</div>
+{% endblock heading-info %}
 
 {% block content %}
-{% for txout in object_list %}
-    <div class="card">
-        <div class="card-header">
-            <span class="font-weight-bold">{{ txout.address }} </span> &middot;
-            <span class="text-muted">{{ txout.amount }} </span>
-        </div>
-        <div class="card-body">
-            {{ txout.notes }}
-        </div>
-        <div class="card-footer text-center text-muted">
-            <a href="#">Edit</a>
-        </div>
-    </div>
-    <br />
-{% endfor %}
+<div class="scroller-container">
+  <div class="scroller">
+    {% for txout in object_list %}
+      <form action="{% url 'txout_detail' txout.pk %}">
+        <button type="submit" class="card">
+          <div id="column1-sats">
+            <span>{{ txout.fmt_amount }}$</span>
+          </div>
+          <div id="column2">
+          </div>
+          <div id="column3">
+            <span><a href="{% url 'txout_edit' txout.pk %}">Edit</a>
+                  <a href="{% url 'txout_delete' txout.pk %}">Delete</a></span>
+          </div>
+        </button>
+      </form>
+      <br />
+    {% endfor %}
+  </div>
+</div>
+<div class="container">
+  <div class="center">
+    <form action="{% url 'txout_new' %}">
+      <button type="submit" class="bottom-button button2">Add Transaction</button>
+    </form>
+  </div>
+</div>
 {% endblock content %}
 

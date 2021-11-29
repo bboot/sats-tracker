@@ -1,6 +1,5 @@
 .circle-base {
   border-radius: 50%;
-  behavior: url(PIE.htc);
   width: 16px;
   height: 16px;
   float: right;
@@ -32,18 +31,6 @@
   padding-top: 6px;
   padding-bottom: 2px;
   //display: none;
-}
-
-body {   
-font-family: Tahoma, Geneva, sans-serif;
-font-size: 22px;
-letter-spacing: 1px;
-word-spacing: 0px;
-color: #000000;
-font-weight: normal;
-text-decoration: none;
-font-style: normal;
-text-transform: none;
 }
 
 .content {
