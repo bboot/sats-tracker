@@ -22,6 +22,12 @@
   color: white;
 }
 
+.heading-info {
+  margin-bottom: 30px;
+  margin-left: 80px;
+  margin-right: 80px;
+}
+
 body {
   font-family: "Lato", sans-serif;
   background-color: #E1ECF9;
@@ -31,6 +37,23 @@ h1 {
   font-size: 30px;
   cursor: pointer;
   background-color: #609CE1;
+}
+
+.main-container {
+  height: 700px;
+  position: relative;
+}
+
+.main-content {
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+  transition: 0.3s;
+  border-radius: 5px; /* 5px rounded corners */
+  background-color: #609CE1;
+  padding: 30px;
+  height: 80%;
+  margin-left: 80px;
+  margin-right: 80px;
+  overflow: auto;
 }
 
 .sidenav {

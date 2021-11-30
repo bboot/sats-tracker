@@ -13,26 +13,28 @@
 {% endblock heading-info %}
 
 {% block content %}
-<div class="scroller">
-  {% for actor in object_list %}
-    <form action="{% url 'actor_detail' actor.pk %}">
-      <button type="submit" class="card">
-        <div id="column1">
-          <span>{{ actor.name }}</span>
-        </div>
-        <div id="column2">
-          <a href="{% url 'actor_detail' actor.pk %}"></a>
-        </div>
-        <div id="column3">
-          <span><a href="{% url 'actor_edit' actor.pk %}">Edit</a>
-                <a href="{% url 'actor_delete' actor.pk %}">Delete</a></span>
-        </div>
-      </button>
-    </form>
-    <br />
-  {% endfor %}
+<div class="main-container">
+    <div class="main-content">
+      {% for actor in object_list %}
+        <form action="{% url 'actor_detail' actor.pk %}">
+          <button type="submit" class="card">
+            <div id="column1">
+              <span>{{ actor.name }}</span>
+            </div>
+            <div id="column2">
+              <a href="{% url 'actor_detail' actor.pk %}"></a>
+            </div>
+            <div id="column3">
+              <span><a href="{% url 'actor_edit' actor.pk %}">Edit</a>
+                    <a href="{% url 'actor_delete' actor.pk %}">Delete</a></span>
+            </div>
+          </button>
+        </form>
+        <br />
+      {% endfor %}
+    </div>
 </div>
-<div class="container">
+<div class="button-container">
   <div class="center">
     <form action="{% url 'actor_new' %}">
       <button type="submit" class="bottom-button button2">Add Actor</button>
