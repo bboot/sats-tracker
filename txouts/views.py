@@ -1,3 +1,4 @@
+from django.urls import reverse, reverse_lazy
 from django.views.generic import (
         DetailView,
         ListView,
@@ -52,6 +53,7 @@ class TxOutUpdateView(UpdateView):
 class TxOutDeleteView(DeleteView):
     model = TxOut
     template_name = "txout_delete.html"
+    success_url = reverse_lazy('txout_list')
 
 
 class ActorDetailView(DetailView):
@@ -74,6 +76,10 @@ class ActorCreateView(CreateView):
         "counterparty",
     )
 
+    def get_success_url(self):
+        actor = self.get_object()
+        return reverse("actor_detail", kwargs={"pk": actor.pk})
+
 
 class ActorUpdateView(UpdateView):
     model = Actor
@@ -85,7 +91,13 @@ class ActorUpdateView(UpdateView):
         "counterparty",
     )
 
+    def get_success_url(self):
+        actor = self.get_object()
+        return reverse("actor_detail", kwargs={"pk": actor.pk})
+
+
 
 class ActorDeleteView(DeleteView):
     model = Actor
     template_name = "actor_delete.html"
+    success_url = reverse_lazy('actor_list')

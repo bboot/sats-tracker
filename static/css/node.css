@@ -6,13 +6,13 @@
 }
 
 .ok {
-  background: #00CCCC;
-  border: 3px solid #00CCCC;
+  background: green;
+  border: 3px solid green;
 }
 
 .notok {
-  background: #E60073;
-  border: 3px solid #E60073;
+  background: red;
+  border: 3px solid red;
 }
 
 .ln-logo {
