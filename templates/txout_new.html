@@ -6,6 +6,20 @@
 {% block content %}
 <form action="" method="post">{% csrf_token %}
     {{ form|crispy }}
-    <button class="btn btn-success ml-2" type="submit">Save</button>
+    <button type="submit">Save</button>
+    <button>Transaction Lookup</button>
+    <button type="submit" name="addr-lookup">Address Lookup</button>
+    <button onclick="document.getElementById('id01').style.display='block'"
+        class="w3-button">Open Modal</button>
+    <div id="id01" class="w3-modal">
+      <div class="w3-modal-content">
+        <div class="w3-container">
+          <span onclick="document.getElementById('id01').style.display='none'"
+          class="w3-button w3-display-topright">&times;</span>
+          <p>Some text in the Modal..</p>
+          <p>Some text in the Modal..</p>
+        </div>
+      </div>
+    </div>
 </form>
 {% endblock content %}

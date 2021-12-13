@@ -3,18 +3,23 @@ from django.urls import reverse
 
 # Create your models here.
 class TxOut(models.Model):
+    '''
+    TODO: Entries must be a unique combo of tx and address
+    '''
     address = models.CharField(max_length=100)
     notes = models.TextField(blank=True)
     actors = models.ManyToManyField("txouts.Actor")
     txins = models.ManyToManyField("txouts.TxOut", blank=True)
     amount = models.BigIntegerField()
-    # maybe store a spent_tx instead of just a boolean
-    spent = models.BooleanField(default=False) # not really needed
+    # Maybe store a spent_tx instead of just a boolean, also
+    # this boolean is known when we look it up so it shouldn't
+    # be part of the form but leave it for now.
+    spent = models.BooleanField(default=False)
     owned = models.BooleanField(default=True)
-    # We want to record the transaction because the address can
-    # show up more than once under different transactions.
+    # We need to record the transaction because the address
+    # is often used in more than one.
     # Are transactions always 65 chars?
-    # This can be looked up if left blank.
+    # This can be left blank as it will be looked up anyways.
     transaction = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
