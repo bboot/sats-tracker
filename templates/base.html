@@ -13,15 +13,9 @@
     <a href="{% url 'txout_list' %}">Transactions</a>
     <a href="{% url 'actor_list' %}">Actors</a>
   </div>
-  <div id="mySidenav" class="sidenav">
-    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-    <a href="{% url 'node' %}">Node</a>
-    <a href="{% url 'txout_list' %}">Transactions</a>
-    <a href="{% url 'actor_list' %}">Actors</a>
-  </div>
 
-  <div id="main">
-    <h1 onclick="openNav()">&#9776;
+  <div id="title-bar">
+    <h1>
       {% block title %}
       {% endblock title %}
     </h1>
@@ -29,19 +23,6 @@
     {% endblock heading-info %}
   </div>
 
-  <script>
-  function openNav() {
-    document.getElementById("mySidenav").style.width = "250px";
-    //document.getElementById("main").style.marginLeft = "250px";
-    document.body.style.backgroundColor = "rgba(0,0,0,0.4)";
-  }
-
-  function closeNav() {
-    document.getElementById("mySidenav").style.width = "0";
-    //document.getElementById("main").style.marginLeft= "0";
-    document.body.style.backgroundColor = "#E1ECF9";
-  }
-  </script>
   {% block content %}
   {% endblock content %}
 </body>

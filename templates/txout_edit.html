@@ -1,5 +1,11 @@
 {% extends "base.html" %}
+{% load static %}
 {% load crispy_forms_tags %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/list.css' %}"/>
+  <script type="text/javascript" src="{% static '3rd-party/jquery-3.6.0.min.js' %}"></script>
+{% endblock head %}
 
 {% block title %}Edit Transaction{% endblock title %}
 
@@ -8,6 +14,39 @@
   {{ form|crispy }}
   <button class="btn btn-info ml-2" type="submit">Update</button>
 </form>     
+<div>
+  <ul id="myUL">
+    <h2>Transaction List
+      <button class="tx-btn" type="submit">Lookup</button>
+    </h2>
+    <li><a href="#">Adele</a></li>
+    <li><a href="#">Agnes</a></li>
+
+    <li><a href="#">Billy</a></li>
+    <li><a href="#">Bob</a></li>
+
+    <li><a href="#">Calvin</a></li>
+    <li><a href="#">Christina</a></li>
+    <li><a href="#">Cindy</a></li>
+  </ul>
+</div>
+<script>
+$(document).ready(function(){
+  $(".tx-btn").click(function(){
+    let addr = $('input[name="address"]').val();
+    let amount = $('input[name="amount"]').val();
+    let tx = $('input[name="transaction"]').val();
+    $.post("/tx_lookup", {
+             "address": addr,
+             "amount": amount,
+             "transaction": tx,
+             "csrfmiddlewaretoken": "{{ csrf_token }}",
+           }, function(data, status){
+      alert("Data: " + data + "\nStatus: " + status);
+    }).fail(function(response){
+      alert("Boguss");
+    });
+  });
+});
+</script>
 {% endblock content %}
-
-

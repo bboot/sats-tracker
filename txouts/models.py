@@ -22,6 +22,9 @@ class TxOut(models.Model):
     # This can be left blank as it will be looked up anyways.
     transaction = models.CharField(max_length=100, blank=True)
 
+    class Meta:
+        unique_together = ('address', 'transaction')
+
     def __str__(self):
         '''
         TODO(maybe) "spent" could be a link to the tx in which

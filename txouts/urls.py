@@ -11,6 +11,7 @@ from .views import (
         ActorCreateView,
         ActorUpdateView,
         ActorDeleteView,
+        tx_lookup,
     )
 
 urlpatterns = [
@@ -23,5 +24,6 @@ urlpatterns = [
     path('actors/new/', ActorCreateView.as_view(), name="actor_new"),
     path('actors/edit/<int:pk>/', ActorUpdateView.as_view(), name="actor_edit"),
     path('actors/delete/<int:pk>/', ActorDeleteView.as_view(), name="actor_delete"),
+    path('tx_lookup', tx_lookup, name="tx_lookup"),
     path('', TxOutListView.as_view(), name="txout_list"),
 ]

@@ -1,6 +1,5 @@
 from django.shortcuts import render
-
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
         DetailView,
@@ -9,6 +8,7 @@ from django.views.generic import (
         UpdateView,
         DeleteView,
     )
+import json
 from pprint import PrettyPrinter
 
 from .models import TxOut, Actor
@@ -30,7 +30,11 @@ class AddrLookup:
     def __new__(cls, addr, amount):
         obj = cls.cache.get(addr)
         if obj:
-            return obj
+            # do some verification, otherwise, re-get it
+            txs = obj.transactions
+            for tx in txs.values():
+                if tx["amount"] is not None:
+                    return obj
         obj = Addr(addr, amount)
         cls.cache[addr] = obj
         return obj
@@ -56,10 +60,16 @@ class Tx:
         self.data = data
         self.amount = None
         vouts = self.data.get('vout')
+        print('@@@@@@@@@@@@@@@@vouts:')
+        PrettyPrinter().pprint(vouts)
         for vout in vouts:
             spk = vout['scriptPubKey']
             if spk['address'] == addr:
+                print('Founndddd itttt!')
                 self.amount = vout['value'] * SAT
+            else:
+                # debug
+                print(f"{spk['address']} != {addr}")
 
     def dump(self):
         if 'hex'in self.data:
@@ -88,10 +98,50 @@ class Addr:
     def lookup_transactions(self):
         txs = self.data["txs"]
         for tx, height in txs["blockHeightsByTxid"].items():
+            amount = TxLookup(tx, self.addr).amount
+            if amount is not None:
+                amount = int(amount)
             self.transactions[tx] = {
                 "height": height,
-                "amount": int(TxLookup(tx, self.addr).amount)
+                "amount": amount,
             }
+
+
+def tx_lookup(request):
+    post = request.POST.dict()
+    del post["csrfmiddlewaretoken"]
+    data = {
+        'data': post
+    }
+    print(post)
+    txs = AddrLookup(post["address"], post["amount"]).transactions
+    print(f'txs out the door: {txs}')
+    tx = txs.get(post["transaction"])
+    if tx:
+        print(f'Got the tx!!!! {tx}')
+        post["amount"] = str(tx["amount"])
+        return HttpResponse(json.dumps(data))
+    if post["amount"]:
+        for tx, tx_data in list(txs.items()):
+            if tx_data["amount"] is None:
+                print(f'{tx_data["amount"]} != {post["amount"]}')
+                txs.pop(tx)
+            elif tx_data["amount"] != int(post["amount"]):
+                print(f'{tx_data["amount"]} != {post["amount"]}')
+                txs.pop(tx)
+    if not len(txs):
+        # TODO: Indicate something wrong with the addr
+        print(f'No txs!!! (left)')
+        return HttpResponse(json.dumps({'candidates': txs}))
+    if len(txs) == 1:
+        print('Got heem!!')
+        tx, tx_data = next(iter(txs.items()))
+        post["transaction"] = tx
+        post["amount"] = str(int(tx_data["amount"]))
+        return HttpResponse(json.dumps(data))
+    # TODO: Need to present the tx's, which one is it?
+    print(f'Wich txxx!?')
+    return HttpResponse(json.dumps({'candidates': txs}))
 
 
 class ValidateAddrMixin:
