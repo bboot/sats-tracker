@@ -15,20 +15,19 @@
   <button class="btn btn-info ml-2" type="submit">Update</button>
 </form>     
 <div>
-  <ul id="myUL">
-    <h2>Transaction List
-      <button class="tx-btn" type="submit">Lookup</button>
-    </h2>
-    <li><a href="#">Adele</a></li>
-    <li><a href="#">Agnes</a></li>
-
-    <li><a href="#">Billy</a></li>
-    <li><a href="#">Bob</a></li>
-
-    <li><a href="#">Calvin</a></li>
-    <li><a href="#">Christina</a></li>
-    <li><a href="#">Cindy</a></li>
-  </ul>
+  <table id="transactions">
+    <thead>
+    <tr>
+      <th>Transaction
+        <button class="tx-btn" type="submit">Lookup</button>
+      </th>
+      <th>Block Height</th>
+      <th>Value</th>
+    </tr>
+    </thead>
+    <tbody id="transactions-body">
+    </tbody>
+  </table>
 </div>
 <script>
 $(document).ready(function(){
@@ -42,11 +41,53 @@ $(document).ready(function(){
              "transaction": tx,
              "csrfmiddlewaretoken": "{{ csrf_token }}",
            }, function(data, status){
-      alert("Data: " + data + "\nStatus: " + status);
+      //alert("Data: " + data + "\nStatus: " + status);
+      let info  = JSON.parse(data);
+      if ('data' in info) {
+        populate_tx_field(info.data.transaction);
+      } else if ('candidates' in info) {
+        populate_tx_candidates(info.candidates);
+      } else {
+        alert("Unknown response.");
+      }
     }).fail(function(response){
-      alert("Boguss");
+      alert("Server reported an error.");
     });
   });
 });
+
+populate_tx_field = function(transaction){
+  // Data: {"data": {"address": "bc1qr3wxjkf2zcms2qxnf9g4u4cxhkhclycjkswm36", "amount": "100000000", "transaction": "15fc459eb788ac633f9d81b66b37c04dbe80985a7a51455ffbb08147a1cff185"}}
+  // Status: success
+  // Data: {"candidates": {"15fc459eb788ac633f9d81b66b37c04dbe80985a7a51455ffbb08147a1cff185": {"height": 708220, "amount": 100000000}}}
+  // Status: success
+  document.getElementById("id_transaction").value = transaction;
+}
+
+populate_tx_candidates = function(candidates){
+  let table = document.getElementById('transactions-body');
+  let nrows = table.rows.length;
+  for (let i=nrows-1; i>=0; i--) {
+    table.deleteRow(i);
+  }
+  let index = 0;
+  for (const txhash in candidates) {
+    let tx = candidates[txhash];
+    let row = table.insertRow(index);
+    let cell_tx = row.insertCell(0);
+    let cell_blockheight = row.insertCell(1);
+    let cell_value = row.insertCell(2);
+    cell_tx.innerHTML = txhash;
+    cell_blockheight.innerHTML = tx.height;
+    let n = parseInt(tx.amount);
+    let value = n.toLocaleString("en-US");
+    cell_value.innerHTML = value + "$";
+    row.id = txhash
+    row.onclick = function(mouse_click){
+      populate_tx_field(this.id);
+    }
+    index++;
+  }
+}
 </script>
 {% endblock content %}

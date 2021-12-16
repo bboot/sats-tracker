@@ -10,6 +10,7 @@ from django.views.generic import (
     )
 import json
 from pprint import PrettyPrinter
+import traceback
 
 from .models import TxOut, Actor
 from node.explorer import Explorer
@@ -139,7 +140,7 @@ def tx_lookup(request):
         post["transaction"] = tx
         post["amount"] = str(int(tx_data["amount"]))
         return HttpResponse(json.dumps(data))
-    # TODO: Need to present the tx's, which one is it?
+    # Present the tx's, which one is it?
     print(f'Wich txxx!?')
     return HttpResponse(json.dumps({'candidates': txs}))
 
@@ -175,7 +176,11 @@ class ValidateAddrMixin:
         post = self.request.POST
         txs = AddrLookup(post["address"], post["amount"]).transactions
         print(f'txs out the door: {txs}')
-        form = form.save(commit=False)
+        try:
+            form = form.save(commit=False)
+        except Exception as e:
+            print(traceback.format_exc())
+            return False
         tx = txs.get(form.transaction)
         if tx:
             print(f'Got the tx!!!! {tx}')

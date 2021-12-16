@@ -3,6 +3,7 @@
 
 {% block head %}
   <link rel="stylesheet" href="{% static 'css/list.css' %}"/>
+  <link rel="stylesheet" href="{% static '3rd-party/fontawesome-free-5.15.4-web/css/all.css' %}"/>
 {% endblock head %}
 
 {% block title %}Transactions{% endblock title %}
@@ -23,8 +24,9 @@
           <div id="column2">
           </div>
           <div id="column3">
-            <span><a href="{% url 'txout_edit' txout.pk %}">Edit</a>
-                  <a href="{% url 'txout_delete' txout.pk %}">Delete</a></span>
+            <span><a href="{% url 'txout_edit' txout.pk %}"><i class="far fa-edit"></i></a>
+                  <a href="{% url 'txout_delete' txout.pk %}"><i class="fas fa-minus-circle"></i></a>
+            </span>
           </div>
         </button>
       </form>

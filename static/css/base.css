@@ -23,17 +23,14 @@
 }
 
 .heading-info {
-  margin-bottom: 30px;
-  margin-left: 80px;
-  margin-right: 80px;
+  margin-bottom: 2%;
+  margin-left: 10%;
+  margin-right: 10%;
 }
 
 body {
   font-family: "Lato", sans-serif;
   background-color: #E1ECF9;
-}
-
-#title-bar {
 }
 
 h1 {
@@ -44,18 +41,16 @@ h1 {
 h2 {
   font-size: 30px;
   background-color: #609CE1;
-  width: 40%;
 }
 
 .tx-btn {
   position: relative;
   top: 50%;
-  transform: perspective(1px) translateY(-25%);
 }
 
 .main-container {
-  height: 700px;
-  position: relative;
+  height: 800px;
+  overflow: hidden;
 }
 
 .main-content {
@@ -64,49 +59,10 @@ h2 {
   border-radius: 5px; /* 5px rounded corners */
   background-color: #609CE1;
   padding: 30px;
-  height: 80%;
-  margin-left: 80px;
-  margin-right: 80px;
-  overflow: auto;
-}
-
-.sidenav {
   height: 100%;
-  width: 0;
-  position: fixed;
-  z-index: 1;
-  top: 0;
-  left: 0;
-  background-color: #236AB9;
-  overflow-x: hidden;
-  transition: 0.5s;
-  padding-top: 60px;
-}
-
-.sidenav a {
-  padding: 8px 8px 8px 32px;
-  text-decoration: none;
-  font-size: 25px;
-  color: #091D34;
-  display: block;
-  transition: 0.3s;
-}
-
-.sidenav a:hover {
-  color: #f1f1f1;
-}
-
-.sidenav .closebtn {
-  position: absolute;
-  top: 0;
-  right: 25px;
-  font-size: 36px;
-  margin-left: 50px;
-}
-
-@media screen and (max-height: 450px) {
-  .sidenav {padding-top: 15px;}
-  .sidenav a {font-size: 18px;}
+  margin-left: 10%;
+  margin-right: 10%;
+  overflow: auto;
 }
 
 /* Add rounded corners to the top left and the top right corner of the image */
@@ -117,3 +73,44 @@ img {
 .container {
   padding: 2px 16px;
 }
+
+@media screen and (max-width: 768px) {
+  .main-container,
+  .main-content {
+    float: none;
+    width: 100%;
+    margin: 0 0 2%;
+  }
+}
+
+@media screen and (max-height: 1100px) {
+  .main-container {
+    height: 700px;
+  }
+}
+
+@media screen and (max-height: 1000px) {
+  .main-container {
+    height: 600px;
+  }
+}
+
+@media screen and (max-height: 900px) {
+  .main-container {
+    height: 500px;
+  }
+}
+
+
+@media screen and (max-height: 800px) {
+  .main-container {
+    height: 400px;
+  }
+}
+
+@media screen and (max-height: 700px) {
+  .main-container {
+    height: 300px;
+  }
+}
+

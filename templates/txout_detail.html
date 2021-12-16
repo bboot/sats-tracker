@@ -4,8 +4,12 @@
 
 {% block content %}
 <div class="txout-entry">
-    <h2>{{ object.address }} </h2>
-    <p>{{ object.amount }} </p>
-    <p>{{ object.notes }} </p>
+    <h2>Address: {{ object.address }} </h2>
+    <h3>Transaction: {{ object.transaction }} </h3>
+    <p>Amount: {{ object.amount }} </p>
+    <p>Notes: {{ object.notes }} </p>
 </div>
+<p><a href="{% url 'txout_edit' object.pk %}">Edit</a>|
+  <a href="{% url 'txout_delete' object.pk %}">Delete</a></p>
+<p>Back to <a href="{% url 'txout_list' %}">All Transactions</a>.</p>
 {% endblock content %}
