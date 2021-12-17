@@ -195,6 +195,11 @@ class ValidateAddrMixin:
         if not len(txs):
             # TODO: Indicate something wrong with the addr
             print(f'No txs!!! (left)')
+            if tx:
+                # XXX: Allow it to save, even though we couldn't
+                # find the transaction. Need to pop up a warning
+                # or better yet, flag the entry.
+                return True
             return False
         if len(txs) == 1:
             tx, tx_data = next(iter(txs.items()))

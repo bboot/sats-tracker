@@ -1,6 +1,9 @@
 from django.db import models
 from django.urls import reverse
 
+from txouts.icons import Animal
+
+
 # Create your models here.
 class TxOut(models.Model):
     '''
@@ -63,6 +66,18 @@ class Actor(models.Model):
         if self.counterparty:
             owned = ""
         return f"{owned}{self.name}"
+
+    @property
+    def icon(self):
+        return Animal(self.id).classes()
+
+    @property
+    def color(self):
+        return Animal(self.id).color()
+
+    @property
+    def style(self):
+        return Animal(self.id).style()
 
     def get_absolute_url(self):
         return reverse("txout_list", args=[str(self.id)])

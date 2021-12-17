@@ -26,11 +26,11 @@
   color: white;
 }
 
-.card:hover .far {
+.card:hover .fa-edit {
   color: white;
 }
 
-.card:hover .fas {
+.card:hover .fa-minus-circle {
   color: white;
 }
 
@@ -130,11 +130,6 @@
   color: black;
 }
 
-@media screen and (max-width: 1000px) {
-  #column1,
-  #column1-sats {
-  }
-}
 @media screen and (max-width: 768px) {
   #column1,
   #column1-sats {

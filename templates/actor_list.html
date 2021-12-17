@@ -19,14 +19,15 @@
         <form action="{% url 'actor_detail' actor.pk %}">
           <button type="submit" class="card">
             <div id="column1">
-              <span>{{ actor.name }}</span>
+              <span><i class="{{ actor.icon }}" style="color:{{ actor.color }}"></i>&ensp;{{ actor.name }}</span>
             </div>
             <div id="column2">
-              <a href="{% url 'actor_detail' actor.pk %}"></a>
+              <span><a href="{% url 'actor_detail' actor.pk %}"></a></span>
             </div>
             <div id="column3">
-              <span><a href="{% url 'actor_edit' actor.pk %}">Edit</a>
-                    <a href="{% url 'actor_delete' actor.pk %}">Delete</a></span>
+              <span><a href="{% url 'actor_edit' actor.pk %}"><i class="fas fa-edit"></i></a>
+                    <a href="{% url 'actor_delete' actor.pk %}"><i class="fas fa-minus-circle"></i></a>
+              </span>
             </div>
           </button>
         </form>
