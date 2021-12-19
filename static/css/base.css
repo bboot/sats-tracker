@@ -120,3 +120,11 @@ img {
   }
 }
 
+.actor-icon {
+  font-size: 36px;
+  text-decoration: none; /* this doesn't get the underline out */
+}
+
+.fa-check {
+  color: green;
+}

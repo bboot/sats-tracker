@@ -16,9 +16,11 @@
   margin-left: 10%;
   margin-right: 10%;
   width: 80%;
-  display: table;
+  display: flex;
+  flex-direction: column;
   border: none;
   text-align: left;
+  table-layout: fixed;
 }
 
 .card:hover {
@@ -40,28 +42,43 @@
   transform: translate(2px, 4px);
 }
 
+.card-tbody {
+  width: 100%;
+}
+
+.icon-box {
+  width: 100px;
+}
+
 #column1 {
   float: left;
-  width: 100%;
+  width: 40%;
   font-size: 36px;
 }
 
-#column1-sats {
+#column2 {
+  float: middle;
+  text-align: right;
+  font-size: 36px;
+  width: 40%;
+}
+
+#column3 {
+  font-size: 36px;
+  width: 40%;
+  float: right;
+}
+
+#column3-sats {
   text-align: right;
   float: left;
   width: 100%;
   font-size: 36px;
 }
 
-#column2 {
-  float: left;
-  width: 43%;
+.actions {
+  font-size: 20px;
 }
-
-#column3 {
-  float: right;
-}
-
 .button-container {
   height: 150px;
   position: relative;
@@ -142,3 +159,4 @@
     font-size: 20px;
   }
 }
+

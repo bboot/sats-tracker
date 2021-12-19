@@ -6,6 +6,26 @@
 <div class="actor-entry">
     <h2>{{ object.name }} </h2>
     <p>{{ object.notes }} </p>
+    <table id="transactions">
+      <thead>
+      <tr>
+        <th>Address</th>
+        <th>Transaction</th>
+        <th>Block Height</th>
+        <th>Amount</th>
+      </tr>
+      </thead>
+      <tbody id="transactions-body">
+        {% for movement in object.get_movements %}
+        <tr>
+          <td>{{ movement.address }}</td>
+          <td>{{ movement.transaction }}</td>
+          <td>{{ movement.height }}</td>
+          <td>{{ movement.amount }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
 </div>
 {% endblock content %}
 

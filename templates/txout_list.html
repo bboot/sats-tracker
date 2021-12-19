@@ -17,16 +17,30 @@
     {% for txout in object_list %}
       <form action="{% url 'txout_detail' txout.pk %}">
         <button type="submit" class="card">
-          <div id="column1-sats">
-            <span>{{ txout.fmt_amount }}$</span>
-          </div>
-          <div id="column2">
-          </div>
-          <div id="column3">
-            <span><a href="{% url 'txout_edit' txout.pk %}"><i class="far fa-edit"></i></a>
-                  <a href="{% url 'txout_delete' txout.pk %}"><i class="fas fa-minus-circle"></i></a>
-            </span>
-          </div>
+          <table><tbody class="card-tbody"><tr>
+            <td class="icon-box">
+              {% for actor in txout.get_actors %}
+                <a class="actor-icon" href="{% url 'actor_detail' actor.pk %}">
+                  <i class="{{ actor.icon }}" style="color:{{ actor.color }}"
+                     title="{{ actor.name }}">
+                  </i>
+                </a>
+              {% endfor %}
+            </td>
+            <td id="column2">
+              {{ txout.height }}
+            </td>
+            <td id="column3-sats">
+              {% if txout.validated %}
+                <i class="fas fa-check" title="Validated"></i>&ensp;
+              {% endif %}
+              <span>{{ txout.fmt_amount }}$</span>
+              <span class="actions"><p>
+                <a href="{% url 'txout_edit' txout.pk %}"><i class="far fa-edit"></i></a>
+                <a href="{% url 'txout_delete' txout.pk %}"><i class="fas fa-minus-circle"></i></a>
+              </span></p>
+            </td>
+          </tr></tbody></table>
         </button>
       </form>
       <br />

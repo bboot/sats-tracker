@@ -4,10 +4,22 @@
 
 {% block content %}
 <div class="txout-entry">
-    <h2>Address: {{ object.address }} </h2>
+    <h3>Address: {{ object.address }} </h3>
     <h3>Transaction: {{ object.transaction }} </h3>
     <p>Amount: {{ object.amount }} </p>
     <p>Notes: {{ object.notes }} </p>
+    <p>Height: {{ object.height }} </p>
+    <p>Owned: {{ object.owned }} </p>
+    <p>Spent: {{ object.spent }} </p>
+    <h3>Actors:</h3>
+    {% for actor in object.get_actors %}
+      <a class="actor-icon" href="{% url 'actor_detail' actor.pk %}">
+        <i class="{{ actor.icon }}"
+           style="color:{{ actor.color }}"
+           title="{{ actor.name }}">
+        </i>
+      </a>
+    {% endfor %}
 </div>
 <p><a href="{% url 'txout_edit' object.pk %}">Edit</a>|
   <a href="{% url 'txout_delete' object.pk %}">Delete</a></p>

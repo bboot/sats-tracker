@@ -44,7 +44,7 @@ $(document).ready(function(){
       //alert("Data: " + data + "\nStatus: " + status);
       let info  = JSON.parse(data);
       if ('data' in info) {
-        populate_tx_field(info.data.transaction);
+        populate_tx_field(info.data);
       } else if ('candidates' in info) {
         populate_tx_candidates(info.candidates);
       } else {
@@ -56,12 +56,13 @@ $(document).ready(function(){
   });
 });
 
-populate_tx_field = function(transaction){
+populate_tx_field = function(data){
   // Data: {"data": {"address": "bc1qr3wxjkf2zcms2qxnf9g4u4cxhkhclycjkswm36", "amount": "100000000", "transaction": "15fc459eb788ac633f9d81b66b37c04dbe80985a7a51455ffbb08147a1cff185"}}
   // Status: success
   // Data: {"candidates": {"15fc459eb788ac633f9d81b66b37c04dbe80985a7a51455ffbb08147a1cff185": {"height": 708220, "amount": 100000000}}}
   // Status: success
-  document.getElementById("id_transaction").value = transaction;
+  document.getElementById("id_transaction").value = data.transaction;
+  document.getElementById("id_height").value = data.height;
 }
 
 populate_tx_candidates = function(candidates){

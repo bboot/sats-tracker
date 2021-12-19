@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse, reverse_lazy
@@ -24,6 +25,15 @@ class TxOutDetailView(DetailView):
 class TxOutListView(ListView):
     model = TxOut
     template_name = "txout_list.html"
+
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+
+    def get_queryset(self, *args, **kwargs):
+        qs = super().get_queryset(*args, **kwargs)
+        qs = qs.order_by("height")
+        return qs
 
 
 class AddrLookup:
@@ -59,6 +69,7 @@ class Tx:
         self.addr = addr
         data = Explorer().lookup(tx)
         self.data = data
+        self.dump()
         self.amount = None
         vouts = self.data.get('vout')
         print('@@@@@@@@@@@@@@@@vouts:')
@@ -71,6 +82,13 @@ class Tx:
             else:
                 # debug
                 print(f"{spk['address']} != {addr}")
+
+    @property
+    def blocktime(self):
+        blocktime = self.data.get("blocktime")
+        if not blocktime:
+            return ""
+        return f"{datetime.fromtimestamp(int(blocktime))}"
 
     def dump(self):
         if 'hex'in self.data:
@@ -99,12 +117,14 @@ class Addr:
     def lookup_transactions(self):
         txs = self.data["txs"]
         for tx, height in txs["blockHeightsByTxid"].items():
-            amount = TxLookup(tx, self.addr).amount
+            transaction = TxLookup(tx, self.addr)
+            amount = transaction.amount
             if amount is not None:
                 amount = int(amount)
             self.transactions[tx] = {
                 "height": height,
                 "amount": amount,
+                "blocktime": transaction.blocktime,
             }
 
 
@@ -114,13 +134,14 @@ def tx_lookup(request):
     data = {
         'data': post
     }
-    print(post)
     txs = AddrLookup(post["address"], post["amount"]).transactions
     print(f'txs out the door: {txs}')
     tx = txs.get(post["transaction"])
     if tx:
         print(f'Got the tx!!!! {tx}')
         post["amount"] = str(tx["amount"])
+        post["height"] = str(tx["height"])
+        post["blocktime"] = tx["blocktime"]
         return HttpResponse(json.dumps(data))
     if post["amount"]:
         for tx, tx_data in list(txs.items()):
@@ -147,10 +168,12 @@ def tx_lookup(request):
 
 class ValidateAddrMixin:
     def post(self, request, *args, **kwargs):
+        self.object = None
+        if kwargs.get('pk'):
+            self.object = self.get_object()
         form = self.get_form()
         print(form) # debug: print it rendered out
         print(form.__class__) # debug: what's a widgets.TxOutForm ??
-        self.object = None # we're not using it but what is it
         if not self.custom_is_valid(form):
             return self.form_invalid(form)
         return self.form_valid(form)
@@ -167,11 +190,11 @@ class ValidateAddrMixin:
         When presenting the tx, show the amount as well so the right
         one is easier to pick out.
 
-        Also, look at the other tx's in the database, whether any
-        of them are txin's and if so record that, and associate the
-        corresponding actors. Actually it would be too costly to
+        TODO: Also, look at the other tx's in the database, whether
+        any of them are txin's and if so record that, and associate
+        the corresponding actors. Actually it would be too costly to
         scan every address whether it is a txin, just look at each
-        address's tx to decide
+        address's tx to decide <- what?
         '''
         post = self.request.POST
         txs = AddrLookup(post["address"], post["amount"]).transactions
@@ -180,11 +203,14 @@ class ValidateAddrMixin:
             form = form.save(commit=False)
         except Exception as e:
             print(traceback.format_exc())
+            print(form.errors)
             return False
         tx = txs.get(form.transaction)
         if tx:
             print(f'Got the tx!!!! {tx}')
-            form.amount = str(int(tx["amount"]))
+            form.amount = str(tx["amount"])
+            form.height = str(tx["height"])
+            #form.blocktime = tx["blocktime"]
             form.save()
             return True
         if form.amount:
@@ -204,7 +230,9 @@ class ValidateAddrMixin:
         if len(txs) == 1:
             tx, tx_data = next(iter(txs.items()))
             form.transaction = tx
-            form.amount = str(int(tx_data["amount"]))
+            form.amount = str(tx_data["amount"])
+            form.height = str(tx_data["height"])
+            #form.blocktime = tx_data["blocktime"]
             form.save()
             return True
         # TODO: Need to present the tx's, which one is it?
@@ -246,16 +274,6 @@ class TxOutDeleteView(DeleteView):
     success_url = reverse_lazy('txout_list')
 
 
-class ActorDetailView(DetailView):
-    model = Actor
-    template_name = "actor_detail.html"
-
-
-class ActorListView(ListView):
-    model = Actor
-    template_name = "actor_list.html"
-
-
 class ActorCreateView(CreateView):
     model = Actor
     template_name = "actor_new.html"
@@ -285,6 +303,15 @@ class ActorUpdateView(UpdateView):
         actor = self.get_object()
         return reverse("actor_detail", kwargs={"pk": actor.pk})
 
+
+class ActorDetailView(DetailView):
+    model = Actor
+    template_name = "actor_detail.html"
+
+
+class ActorListView(ListView):
+    model = Actor
+    template_name = "actor_list.html"
 
 
 class ActorDeleteView(DeleteView):
