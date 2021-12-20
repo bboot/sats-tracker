@@ -43,7 +43,7 @@ class AddrLookup:
         if obj:
             # do some verification, otherwise, re-get it
             txs = obj.transactions
-            for tx in txs.values():
+            for tx in txs:
                 if tx["amount"] is not None:
                     return obj
         obj = Addr(addr, amount)
@@ -83,13 +83,6 @@ class Tx:
                 # debug
                 print(f"{spk['address']} != {addr}")
 
-    @property
-    def blocktime(self):
-        blocktime = self.data.get("blocktime")
-        if not blocktime:
-            return ""
-        return f"{datetime.fromtimestamp(int(blocktime))}"
-
     def dump(self):
         if 'hex'in self.data:
             # Just not using it now and it looks messy
@@ -111,7 +104,7 @@ class Addr:
                 self.data["txs"] = item
             elif "isvalid" in item:
                 self.data["addr"] = item
-        self.transactions = {}
+        self.transactions = []
         self.lookup_transactions()
 
     def lookup_transactions(self):
@@ -121,13 +114,14 @@ class Addr:
             amount = transaction.amount
             if amount is not None:
                 amount = int(amount)
-            self.transactions[tx] = {
+            self.transactions.append({
+                "txid": tx,
                 "height": height,
                 "amount": amount,
-                "blocktime": transaction.blocktime,
-            }
+                "transaction": transaction
+            })
 
-
+# api
 def tx_lookup(request):
     post = request.POST.dict()
     del post["csrfmiddlewaretoken"]
@@ -135,34 +129,20 @@ def tx_lookup(request):
         'data': post
     }
     txs = AddrLookup(post["address"], post["amount"]).transactions
-    print(f'txs out the door: {txs}')
-    tx = txs.get(post["transaction"])
-    if tx:
-        print(f'Got the tx!!!! {tx}')
-        post["amount"] = str(tx["amount"])
-        post["height"] = str(tx["height"])
-        post["blocktime"] = tx["blocktime"]
-        return HttpResponse(json.dumps(data))
-    if post["amount"]:
-        for tx, tx_data in list(txs.items()):
-            if tx_data["amount"] is None:
-                print(f'{tx_data["amount"]} != {post["amount"]}')
-                txs.pop(tx)
-            elif tx_data["amount"] != int(post["amount"]):
-                print(f'{tx_data["amount"]} != {post["amount"]}')
-                txs.pop(tx)
-    if not len(txs):
-        # TODO: Indicate something wrong with the addr
-        print(f'No txs!!! (left)')
-        return HttpResponse(json.dumps({'candidates': txs}))
-    if len(txs) == 1:
-        print('Got heem!!')
-        tx, tx_data = next(iter(txs.items()))
-        post["transaction"] = tx
-        post["amount"] = str(int(tx_data["amount"]))
-        return HttpResponse(json.dumps(data))
+    print(f'txs found are: {txs}')
+    for tx in txs:
+        if tx["txid"] == post["transaction"] and post["amount"] and(
+                str(tx["amount"]) == post["amount"]):
+            print(f'Got the tx!!!! {tx}')
+            post["transaction"] = tx["txid"]
+            post["height"] = str(tx["height"])
+            return HttpResponse(json.dumps(data))
+    # TODO: Indicate something wrong with the addr
     # Present the tx's, which one is it?
-    print(f'Wich txxx!?')
+    # Remove the <Tx> objects from the data to be sent back
+    for tx in txs:
+        if "transaction" in tx:
+            del tx["transaction"]
     return HttpResponse(json.dumps({'candidates': txs}))
 
 
@@ -170,22 +150,28 @@ class ValidateAddrMixin:
     def post(self, request, *args, **kwargs):
         self.object = None
         if kwargs.get('pk'):
+            # If 'pk' is present, this is an edit. otherwise it's
+            # a new.
             self.object = self.get_object()
         form = self.get_form()
-        print(form) # debug: print it rendered out
-        print(form.__class__) # debug: what's a widgets.TxOutForm ??
-        if not self.custom_is_valid(form):
+        valid_tx = self.custom_is_valid(form)
+        if not valid_tx:
             return self.form_invalid(form)
+        if self.object:
+            self.object.set_data(valid_tx["transaction"].data)
         return self.form_valid(form)
 
     def custom_is_valid(self, form):
         '''
-        Not sure if this is the best way to do this, but we are going
-        to validate whether the address is found on the blockchain,
-        then record what transaction it was in if only one. If more
-        than one, we will record the transaction that matches the
-        amount. If none or more than one match the amount, then we
-        have to present with some transactions to choose from.
+        Returns transaction data dict if valid. Also updates the
+        form with data found from the blockchain.
+
+        We are going to validate whether the address is found on
+        the blockchain, then record what transaction it was in if
+        only one. If more than one, we will record the transaction
+        that matches the amount. If none or more than one match
+        the amount, then we have to present with some transactions
+        to choose from.
 
         When presenting the tx, show the amount as well so the right
         one is easier to pick out.
@@ -196,48 +182,25 @@ class ValidateAddrMixin:
         scan every address whether it is a txin, just look at each
         address's tx to decide <- what?
         '''
-        post = self.request.POST
-        txs = AddrLookup(post["address"], post["amount"]).transactions
-        print(f'txs out the door: {txs}')
         try:
             form = form.save(commit=False)
         except Exception as e:
             print(traceback.format_exc())
             print(form.errors)
-            return False
-        tx = txs.get(form.transaction)
-        if tx:
-            print(f'Got the tx!!!! {tx}')
-            form.amount = str(tx["amount"])
-            form.height = str(tx["height"])
-            #form.blocktime = tx["blocktime"]
-            form.save()
-            return True
-        if form.amount:
-            for tx, tx_data in list(txs.items()):
-                if tx_data["amount"] != int(form.amount):
-                    print(f'{tx_data["amount"]} != {form.amount}')
-                    txs.pop(tx)
-        if not len(txs):
-            # TODO: Indicate something wrong with the addr
-            print(f'No txs!!! (left)')
-            if tx:
-                # XXX: Allow it to save, even though we couldn't
-                # find the transaction. Need to pop up a warning
-                # or better yet, flag the entry.
-                return True
-            return False
-        if len(txs) == 1:
-            tx, tx_data = next(iter(txs.items()))
-            form.transaction = tx
-            form.amount = str(tx_data["amount"])
-            form.height = str(tx_data["height"])
-            #form.blocktime = tx_data["blocktime"]
-            form.save()
-            return True
+            return None
+        post = self.request.POST
+        txs = AddrLookup(post["address"], post["amount"]).transactions
+        print(f'txs out the door: {txs}')
+        for tx in txs:
+            if tx["txid"] == form.transaction and form.amount and(
+                    str(tx["amount"]) == form.amount):
+                print(f'Got the tx!!!! {tx}')
+                form.height = str(tx["height"])
+                form.save()
+                return tx
         # TODO: Need to present the tx's, which one is it?
         print(f'Wich txxx!?')
-        return False
+        return None
 
 
 class TxOutCreateView(ValidateAddrMixin, CreateView):

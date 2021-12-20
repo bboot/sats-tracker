@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime as dt
 from django.db import models
 from django.urls import reverse
 import json
@@ -30,23 +30,60 @@ class TxOut(models.Model):
     # Don't get too dependent on JSONField or anything, since
     # we are going to store this encrypted later.
     # May want to use BinaryField
-    # data = models.TextField(blank=True, null=True)
+    # I think data will be:
+    # { 'transaction': tx_dict, 'addr-details': details_dict }
+    data = models.TextField(default="{}")
 
     class Meta:
         unique_together = ('address', 'transaction')
 
     def __init__(self, *args, **kwargs):
-        self.data_json = None # XXX not used yet
         return super().__init__(*args, **kwargs)
+
+    def get_block_time(self):
+        data = json.loads(self.data)
+        return data.get("transaction", {}).get("blocktime")
 
     @property
     def blocktime(self):
-        if not self.data_json:
-            self.data_json = json.loads(self.data)
-        blocktime = self.data_json.get("blocktime")
+        blocktime = self.get_block_time()
         if not blocktime:
             return ""
-        return f"{datetime.fromtimestamp(int(blocktime))}"
+        return f"{dt.datetime.fromtimestamp(int(blocktime))}"
+
+    @property
+    def blockdate(self):
+        blocktime = self.get_block_time()
+        if not blocktime:
+            return ""
+        return f"{dt.datetime.fromtimestamp(int(blocktime)).strftime('%D')}"
+
+    @property
+    def blockhour(self):
+        blocktime = self.get_block_time()
+        if not blocktime:
+            return ""
+        hour = dt.datetime.fromtimestamp(int(blocktime),
+                                         tz=dt.timezone(dt.timedelta(hours=-8)))
+        return f"{hour.strftime('%I:%M:%S %p')}"
+
+    def set_data(self, data):
+        if not data:
+            return
+        if "blocktime" in data:
+            key = "transaction"
+        elif "txCount" in data:
+            key = "addr-details"
+        else:
+            print("Not sure what data this is:", data)
+            key = "not-sure"
+        data_json = json.loads(self.data)
+        existing = data_json.get(key)
+        if existing:
+            existing.update(data)
+        else:
+            data_json[key] = data
+        self.data = json.dumps(data_json)
 
     def get_actors(self):
         for actor in self.actors.all():
@@ -59,6 +96,9 @@ class TxOut(models.Model):
         if len(self.transaction) < 64:
             return False
         return True
+
+    def addr_repr(self):
+        return self.address[-6:]
 
     def __str__(self):
         '''

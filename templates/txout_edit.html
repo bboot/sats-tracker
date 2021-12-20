@@ -5,6 +5,7 @@
 {% block head %}
   <link rel="stylesheet" href="{% static 'css/list.css' %}"/>
   <script type="text/javascript" src="{% static '3rd-party/jquery-3.6.0.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'js/lookup.js' %}"></script>
 {% endblock head %}
 
 {% block title %}Edit Transaction{% endblock title %}
@@ -29,66 +30,4 @@
     </tbody>
   </table>
 </div>
-<script>
-$(document).ready(function(){
-  $(".tx-btn").click(function(){
-    let addr = $('input[name="address"]').val();
-    let amount = $('input[name="amount"]').val();
-    let tx = $('input[name="transaction"]').val();
-    $.post("/tx_lookup", {
-             "address": addr,
-             "amount": amount,
-             "transaction": tx,
-             "csrfmiddlewaretoken": "{{ csrf_token }}",
-           }, function(data, status){
-      //alert("Data: " + data + "\nStatus: " + status);
-      let info  = JSON.parse(data);
-      if ('data' in info) {
-        populate_tx_field(info.data);
-      } else if ('candidates' in info) {
-        populate_tx_candidates(info.candidates);
-      } else {
-        alert("Unknown response.");
-      }
-    }).fail(function(response){
-      alert("Server reported an error.");
-    });
-  });
-});
-
-populate_tx_field = function(data){
-  // Data: {"data": {"address": "bc1qr3wxjkf2zcms2qxnf9g4u4cxhkhclycjkswm36", "amount": "100000000", "transaction": "15fc459eb788ac633f9d81b66b37c04dbe80985a7a51455ffbb08147a1cff185"}}
-  // Status: success
-  // Data: {"candidates": {"15fc459eb788ac633f9d81b66b37c04dbe80985a7a51455ffbb08147a1cff185": {"height": 708220, "amount": 100000000}}}
-  // Status: success
-  document.getElementById("id_transaction").value = data.transaction;
-  document.getElementById("id_height").value = data.height;
-}
-
-populate_tx_candidates = function(candidates){
-  let table = document.getElementById('transactions-body');
-  let nrows = table.rows.length;
-  for (let i=nrows-1; i>=0; i--) {
-    table.deleteRow(i);
-  }
-  let index = 0;
-  for (const txhash in candidates) {
-    let tx = candidates[txhash];
-    let row = table.insertRow(index);
-    let cell_tx = row.insertCell(0);
-    let cell_blockheight = row.insertCell(1);
-    let cell_value = row.insertCell(2);
-    cell_tx.innerHTML = txhash;
-    cell_blockheight.innerHTML = tx.height;
-    let n = parseInt(tx.amount);
-    let value = n.toLocaleString("en-US");
-    cell_value.innerHTML = value + "$";
-    row.id = txhash
-    row.onclick = function(mouse_click){
-      populate_tx_field(this.id);
-    }
-    index++;
-  }
-}
-</script>
 {% endblock content %}

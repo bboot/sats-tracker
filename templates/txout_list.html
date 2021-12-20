@@ -28,14 +28,23 @@
               {% endfor %}
             </td>
             <td id="column2">
-              {{ txout.height }}
+              <span title="{{ txout.blockhour }}"><i class="far fa-clock"></i>{{ txout.blockdate }}&ensp;{{ txout.addr_repr }}</span>
             </td>
             <td id="column3-sats">
-              {% if txout.validated %}
-                <i class="fas fa-check" title="Validated"></i>&ensp;
+              {% if txout.owned %}
+                <i class="fas fa-key" style="color: green" title="Have private key"></i>
               {% endif %}
-              <span>{{ txout.fmt_amount }}$</span>
-              <span class="actions"><p>
+              {% if txout.spent %}
+                <i class="fas fa-dove" style="color: red" title="Spent"></i>
+              {% endif %}
+              {% if txout.notes %}
+                <i class="far fa-sticky-note" title="{{ txout.notes }}"></i>
+              {% endif %}
+              {% if not txout.validated %}
+                <i class="fas fa-check" title="Validated"></i>
+              {% endif %}
+              <span>&ensp;{{ txout.fmt_amount }}$</span>
+              <span class="actions"><p style="display: none">
                 <a href="{% url 'txout_edit' txout.pk %}"><i class="far fa-edit"></i></a>
                 <a href="{% url 'txout_delete' txout.pk %}"><i class="fas fa-minus-circle"></i></a>
               </span></p>
