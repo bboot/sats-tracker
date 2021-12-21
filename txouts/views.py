@@ -29,7 +29,6 @@ class TxOutListView(ListView):
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
-
     def get_queryset(self, *args, **kwargs):
         qs = super().get_queryset(*args, **kwargs)
         qs = qs.order_by("height")
@@ -54,34 +53,48 @@ class AddrLookup:
 class TxLookup:
     cache = {} # XXX Not thread safe
     def __new__(cls, tx, addr):
-        obj = cls.cache.get(tx)
+        obj = cls.cache.get((tx, addr))
         if obj:
             return obj
         obj = Tx(tx, addr)
-        cls.cache[tx] = obj
+        cls.cache[(tx, addr)] = obj
         return obj
 
 
 SAT = 100000000
 class Tx:
+    '''
+    Looking up transactions identified by :tx: that have already been
+    associated with :addr:
+
+    Don't pass in random txid's otherwise we might think an addr is
+    spent when it isn't
+
+    This is not organized right
+    '''
     def __init__(self, tx, addr):
         self.tx = tx
         self.addr = addr
         data = Explorer().lookup(tx)
         self.data = data
+        self.addr_looks_spent = False
         self.dump()
-        self.amount = None
+        self.amount = 0
         vouts = self.data.get('vout')
+        print('@@@@@@@@@@@@@@@@TX:', self.data.get("txid"))
         print('@@@@@@@@@@@@@@@@vouts:')
         PrettyPrinter().pprint(vouts)
         for vout in vouts:
             spk = vout['scriptPubKey']
             if spk['address'] == addr:
                 print('Founndddd itttt!')
-                self.amount = vout['value'] * SAT
+                self.amount = int(vout['value'] * SAT)
             else:
                 # debug
                 print(f"{spk['address']} != {addr}")
+        if not self.amount:
+            # did not find a vout, this addr has been spent
+            self.addr_looks_spent = True
 
     def dump(self):
         if 'hex'in self.data:
@@ -99,55 +112,62 @@ class Addr:
             'txs': None,
             'addr': None
         }
+        self.spent_tx = None
         for item in data:
             if 'txCount' in item:
                 self.data["txs"] = item
             elif "isvalid" in item:
                 self.data["addr"] = item
-        self.transactions = []
         self.lookup_transactions()
 
     def lookup_transactions(self):
+        self.transactions = []
         txs = self.data["txs"]
         for tx, height in txs["blockHeightsByTxid"].items():
             transaction = TxLookup(tx, self.addr)
-            amount = transaction.amount
-            if amount is not None:
-                amount = int(amount)
+            if transaction.addr_looks_spent:
+                assert txs["balanceSat"] == "0",\
+                        f"Address {self.addr} looked spent"
+                self.spent_tx = tx
+            # These are returned in the tx_lookup api
             self.transactions.append({
                 "txid": tx,
                 "height": height,
-                "amount": amount,
+                "spent": transaction.addr_looks_spent,
+                "amount": transaction.amount,
+                # this field is removed before sending
+                # in the tx_lookup api response
                 "transaction": transaction
             })
 
 # api
 def tx_lookup(request):
     post = request.POST.dict()
-    del post["csrfmiddlewaretoken"]
-    data = {
-        'data': post
-    }
-    txs = AddrLookup(post["address"], post["amount"]).transactions
-    print(f'txs found are: {txs}')
-    for tx in txs:
-        if tx["txid"] == post["transaction"] and post["amount"] and(
+    addr = AddrLookup(post["address"], post["amount"])
+    print(f'txs found are: {addr.transactions}')
+    for tx in addr.transactions:
+        if tx["txid"] == post["txid"] and post["amount"] and(
                 str(tx["amount"]) == post["amount"]):
             print(f'Got the tx!!!! {tx}')
-            post["transaction"] = tx["txid"]
-            post["height"] = str(tx["height"])
-            return HttpResponse(json.dumps(data))
+            tx["match"] = True
     # TODO: Indicate something wrong with the addr
     # Present the tx's, which one is it?
     # Remove the <Tx> objects from the data to be sent back
-    for tx in txs:
-        if "transaction" in tx:
-            del tx["transaction"]
-    return HttpResponse(json.dumps({'candidates': txs}))
+    payload_txs = [tx.copy() for tx in addr.transactions]
+    for tx in payload_txs:
+        del tx["transaction"]
+    payload = {
+        'data': {
+            'spent_tx': addr.spent_tx,
+            'transactions': payload_txs,
+        }
+    }
+    return HttpResponse(json.dumps(payload))
 
 
 class ValidateAddrMixin:
     def post(self, request, *args, **kwargs):
+        print('@@@@@@@@@@@@@@@@@@@@@@@@@ POST!!', request)
         self.object = None
         if kwargs.get('pk'):
             # If 'pk' is present, this is an edit. otherwise it's
@@ -158,8 +178,11 @@ class ValidateAddrMixin:
         if not valid_tx:
             return self.form_invalid(form)
         if self.object:
+            print('@@@@@@@@@@@@@@@ valid_tx', valid_tx)
             self.object.set_data(valid_tx["transaction"].data)
-        return self.form_valid(form)
+        ret = self.form_valid(form)
+        print('@@@@@@@@@@@@@@@@@@@@@@@@@ returning self.form_valid', ret)
+        return ret
 
     def custom_is_valid(self, form):
         '''
@@ -189,17 +212,34 @@ class ValidateAddrMixin:
             print(form.errors)
             return None
         post = self.request.POST
-        txs = AddrLookup(post["address"], post["amount"]).transactions
-        print(f'txs out the door: {txs}')
+        addr = AddrLookup(post["address"], post["amount"])
+        txs = addr.transactions
+        print(f'UPDATE: txs to sort through: {txs}')
         for tx in txs:
-            if tx["txid"] == form.transaction and form.amount and(
-                    str(tx["amount"]) == form.amount):
+            found = False
+            print('@@@@@@@@@@@@@@@@@@ tx["txid"]', tx["txid"])
+            print('@@@@@@@@@@@@@@@@@@ form.transaction', form.transaction)
+            if tx["txid"] == form.transaction:
+                if addr.spent_tx:
+                    print('@@@@@@@@@@@@@@@@@@ addr looks spent')
+                    found = True
+                elif form.amount and str(tx["amount"]) == str(form.amount):
+                    found = True
+                print('@@@@@@@@@@@@@@@@@@ form.amount', form.amount)
+                print('@@@@@@@@@@@@@@@@@@ tx[amount]', tx["amount"])
+                print('@@@@@@@@@@@@@@@@@@ found', found)
+            elif not form.transaction:
+                if form.amount and str(tx["amount"]) == str(form.amount):
+                    print('@@@@@@@@@@@@@@@@@@2 form.amount', form.amount)
+                    print('@@@@@@@@@@@@@@@@@@2 tx[amount]', tx["amount"])
+                    found = True
+            if found:
                 print(f'Got the tx!!!! {tx}')
+                tx["match"] = True
                 form.height = str(tx["height"])
                 form.save()
                 return tx
-        # TODO: Need to present the tx's, which one is it?
-        print(f'Wich txxx!?')
+        print('@@@@@@@@@@@@@@@@@ rrturning NONE!!')
         return None
 
 
@@ -211,7 +251,7 @@ class TxOutCreateView(ValidateAddrMixin, CreateView):
         "notes",
         "actors",
         "amount",
-        "spent",
+        "spent_tx",
         "owned",
         "transaction",
     )
@@ -225,7 +265,7 @@ class TxOutUpdateView(ValidateAddrMixin, UpdateView):
         "notes",
         "actors",
         "amount",
-        "spent",
+        "spent_tx",
         "owned",
         "transaction",
     )

@@ -17,16 +17,13 @@ class TxOut(models.Model):
     txins = models.ManyToManyField("txouts.TxOut", blank=True)
     amount = models.BigIntegerField()
     height = models.IntegerField(default=1)
-    # Maybe store a spent_tx instead of just a boolean, also
-    # this boolean is known when we look it up so it shouldn't
-    # be part of the form but leave it for now.
-    spent = models.BooleanField(default=False)
     owned = models.BooleanField(default=True)
     # We need to record the transaction because the address
     # is often used in more than one.
     # Are transactions always 65 chars?
     # This can be left blank as it will be looked up anyways.
     transaction = models.CharField(max_length=100, blank=True)
+    spent_tx = models.CharField(max_length=100, blank=True)
     # Don't get too dependent on JSONField or anything, since
     # we are going to store this encrypted later.
     # May want to use BinaryField
@@ -106,7 +103,7 @@ class TxOut(models.Model):
         it was spent
         '''
         spent = ''
-        if self.spent:
+        if self.spent_tx:
             spent = ' (spent)'
         owned = '(*)'
         if not self.owned:
@@ -138,10 +135,10 @@ class Actor(models.Model):
             owned = ""
         return f"{owned}{self.name}"
 
-    def get_movements(self):
-        for movement in self.txouts.all():
-            print(movement)
-            yield movement
+    def get_transactions(self):
+        for transaction in self.txouts.all():
+            print(transaction)
+            yield transaction
 
     @property
     def icon(self):

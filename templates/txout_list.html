@@ -28,14 +28,14 @@
               {% endfor %}
             </td>
             <td id="column2">
-              <span title="{{ txout.blockhour }}"><i class="far fa-clock"></i>{{ txout.blockdate }}&ensp;{{ txout.addr_repr }}</span>
+                <span title="{{ txout.blockhour }}"><i class="far fa-clock"></i>{{ txout.blockdate }}</span>&ensp;<span title="Address: {{ txout.address }}&#10;&#13;Txid: {{ txout.transaction }}">{{ txout.addr_repr }}</span>
             </td>
             <td id="column3-sats">
               {% if txout.owned %}
                 <i class="fas fa-key" style="color: green" title="Have private key"></i>
               {% endif %}
-              {% if txout.spent %}
-                <i class="fas fa-dove" style="color: red" title="Spent"></i>
+              {% if txout.spent_tx %}
+                <i class="fas fa-dove" style="color: red" title="Spent in tx: {{ txout.spent_tx }}"></i>
               {% endif %}
               {% if txout.notes %}
                 <i class="far fa-sticky-note" title="{{ txout.notes }}"></i>

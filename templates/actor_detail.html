@@ -16,12 +16,12 @@
       </tr>
       </thead>
       <tbody id="transactions-body">
-        {% for movement in object.get_movements %}
+        {% for tx in object.get_transactions %}
         <tr>
-          <td>{{ movement.address }}</td>
-          <td>{{ movement.transaction }}</td>
-          <td>{{ movement.height }}</td>
-          <td>{{ movement.amount }}</td>
+          <td>{{ tx.address }}</td>
+          <td>{{ tx.transaction }}</td>
+          <td>{{ tx.height }}</td>
+          <td>{{ tx.amount }}</td>
         </tr>
         {% endfor %}
       </tbody>
