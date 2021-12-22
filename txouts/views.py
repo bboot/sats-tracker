@@ -34,6 +34,11 @@ class TxOutListView(ListView):
         qs = qs.order_by("height")
         return qs
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['actors'] = ActorListView().get_queryset()
+        return context
+
 
 class AddrLookup:
     cache = {} # XXX Not thread safe
@@ -180,9 +185,15 @@ class ValidateAddrMixin:
         if self.object:
             print('@@@@@@@@@@@@@@@ valid_tx', valid_tx)
             self.object.set_data(valid_tx["transaction"].data)
+            self.update_actors()
         ret = self.form_valid(form)
         print('@@@@@@@@@@@@@@@@@@@@@@@@@ returning self.form_valid', ret)
         return ret
+
+    def update_actors(self):
+        for actor in self.object.get_actors():
+            print('@@@@@@@@@@@@@ actor', actor)
+            actor.add_event(self.object)
 
     def custom_is_valid(self, form):
         '''

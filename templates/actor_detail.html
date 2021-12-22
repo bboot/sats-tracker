@@ -16,7 +16,7 @@
       </tr>
       </thead>
       <tbody id="transactions-body">
-        {% for tx in object.get_transactions %}
+        {% for tx in object.get_events %}
         <tr>
           <td>{{ tx.address }}</td>
           <td>{{ tx.transaction }}</td>

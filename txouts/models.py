@@ -84,7 +84,6 @@ class TxOut(models.Model):
 
     def get_actors(self):
         for actor in self.actors.all():
-            print(actor)
             yield actor
 
     def validated(self):
@@ -135,10 +134,13 @@ class Actor(models.Model):
             owned = ""
         return f"{owned}{self.name}"
 
-    def get_transactions(self):
+    def get_events(self):
         for transaction in self.txouts.all():
             print(transaction)
             yield transaction
+
+    def add_event(self, event):
+        self.txouts.add(event)
 
     @property
     def icon(self):

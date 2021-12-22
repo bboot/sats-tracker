@@ -23,5 +23,5 @@
 </div>
 <p><a href="{% url 'txout_edit' object.pk %}">Edit</a>|
   <a href="{% url 'txout_delete' object.pk %}">Delete</a></p>
-<p>Back to <a href="{% url 'txout_list' %}">All Transactions</a>.</p>
+<p>Back to <a href="{% url 'txout_list' %}?hl={{ object.pk }}">All Transactions</a>.</p>
 {% endblock content %}
