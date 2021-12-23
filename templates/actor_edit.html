@@ -1,13 +1,17 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}Edit Actor{% endblock title %}
+{% block title %}Edit {{ object }}{% endblock title %}
 
 {% block content %}
 <form action="" method="post">{% csrf_token %}
   {{ form|crispy }}
-  <button class="btn btn-info ml-2" type="submit">Update</button>
 </form>     
+<div class="container">
+  <button class="btn btn-outline-success btn-lg" type="submit">Update</button>&ensp;
+  <a class="btn btn-outline-secondary btn-lg" href="{% url 'actor_detail' object.pk %}">Cancel</a>&ensp;
+  <a class="btn btn-outline-danger btn-lg" href="{% url 'actor_delete' object.pk %}">Delete</a>
+</div>
 {% endblock content %}
 
 

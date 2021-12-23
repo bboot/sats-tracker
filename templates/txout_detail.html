@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Transaction Detail{% endblock title %}
+{% block title %}<a href="{% url 'txout_edit' object.pk %}">Edit Transaction</a>{% endblock title %}
 
 {% block content %}
 <div class="txout-entry">
@@ -21,7 +21,7 @@
       </a>
     {% endfor %}
 </div>
-<p><a href="{% url 'txout_edit' object.pk %}">Edit</a>|
-  <a href="{% url 'txout_delete' object.pk %}">Delete</a></p>
-<p>Back to <a href="{% url 'txout_list' %}?hl={{ object.pk }}">All Transactions</a>.</p>
+<div class="container">
+  <a class="btn btn-outline-info btn-lg" href="{% url 'txout_list' %}?hl={{ object.pk }}">Back</a>
+</div>
 {% endblock content %}

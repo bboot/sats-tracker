@@ -309,7 +309,6 @@ class ActorUpdateView(UpdateView):
     fields = (
         "name",
         "notes",
-        "txouts",
         "counterparty",
     )
 
@@ -321,6 +320,16 @@ class ActorUpdateView(UpdateView):
 class ActorDetailView(DetailView):
     model = Actor
     template_name = "actor_detail.html"
+
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # by defining an object list, we can re-use the
+        # txout_list.html template, which is moved to main.html
+        context['object_list'] = self.object.get_txouts()
+        return context
 
 
 class ActorListView(ListView):

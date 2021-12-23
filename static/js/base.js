@@ -15,3 +15,14 @@ $(document).ready(() => {
   }
 });
 
+toggle_icon = (name) => {
+    let icon = document.getElementsByClassName(name)[0];
+    let slash_icon = document.getElementsByClassName("slash-" + name)[0];
+    if (slash_icon.style.display == "none") {
+        slash_icon.style.display = "block";
+        icon.style.display = "none";
+    } else {
+        slash_icon.style.display = "none";
+        icon.style.display = "block";
+    }
+}

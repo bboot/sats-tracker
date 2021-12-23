@@ -1,31 +1,51 @@
 {% extends "base.html" %}
+{% load static %} 
 
-{% block title %}Actor Detail{% endblock title %}
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/list.css' %}"/>
+  <script type="text/javascript" src="{% static '3rd-party/jquery-3.6.0.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'js/base.js' %}"></script>
+{% endblock head %}
+
+{% block title %}<a href="{% url 'actor_edit' object.pk %}">Edit: {{ object.name }}</a>{% endblock title %}
 
 {% block content %}
 <div class="actor-entry">
-    <h2>{{ object.name }} </h2>
     <p>{{ object.notes }} </p>
-    <table id="transactions">
-      <thead>
-      <tr>
-        <th>Address</th>
-        <th>Transaction</th>
-        <th>Block Height</th>
-        <th>Amount</th>
-      </tr>
-      </thead>
-      <tbody id="transactions-body">
-        {% for tx in object.get_events %}
-        <tr>
-          <td>{{ tx.address }}</td>
-          <td>{{ tx.transaction }}</td>
-          <td>{{ tx.height }}</td>
-          <td>{{ tx.amount }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+</div>
+<div class="main-container">
+  <div class="main-content">
+    {% include "main.html" %}
+  </div>
+</div>
+<div class="button-container">
+  <div class="center-holder">
+      <span onclick="toggle_icon('dove')"
+            class="fa-stack fa-4x buttons slash-dove"
+            title="Don't show spent transaction outputs">
+        <i class="fas fa-dove fa-stack-1x" style="color: red"></i>
+        <i class="fas fa-slash fa-stack-1x"></i>
+      </span>
+      <span onclick="toggle_icon('dove')"
+            class="fa-stack fa-4x buttons dove"
+            title="Include spent transaction outputs">
+        <i class="fas fa-dove fa-stack-1x" style="color: red"></i>
+      </span>
+    <span onclick="toggle_icon('key')"
+            class="fa-stack fa-1x buttons slash-key"
+            title="Include transaction outputs that I don't own">
+      <i class="fas fa-key fa-stack-1x" style="color: red"></i>
+      <i class="fas fa-slash fa-stack-1x"></i>
+    </span>
+    <span onclick="toggle_icon('key')"
+            class="fa-stack fa-1x buttons key"
+            title="Only show owned transaction outputs">
+      <i class="fas fa-key fa-stack-1x" style="color: green" ></i>
+    </span>
+    <form action="{% url 'txout_list' %}">
+      <button type="submit" class="bottom-button button2 buttons">All</button>
+    </form>
+  </div>
 </div>
 {% endblock content %}
 

@@ -134,13 +134,13 @@ class Actor(models.Model):
             owned = ""
         return f"{owned}{self.name}"
 
-    def get_events(self):
+    def get_txouts(self):
         for transaction in self.txouts.all():
             print(transaction)
             yield transaction
 
-    def add_event(self, event):
-        self.txouts.add(event)
+    def add_txout(self, txout):
+        self.txouts.add(txout)
 
     @property
     def icon(self):

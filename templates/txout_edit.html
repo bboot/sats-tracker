@@ -13,14 +13,13 @@
 {% block content %}
 <form action="" method="post">{% csrf_token %}
   {{ form|crispy }}
-  <button class="btn btn-info ml-2" type="submit">Update</button>
 </form>     
 <div>
   <table id="transactions">
     <thead>
     <tr>
       <th>Transaction
-        <button class="tx-lookup" type="submit">Lookup</button>
+        <button class="btn btn-outline-info btn-lg tx-lookup" type="submit">Refresh</button>
       </th>
       <th>Block Height</th>
       <th>Value</th>
@@ -29,5 +28,10 @@
     <tbody id="transactions-body">
     </tbody>
   </table>
+</div>
+<div class="container">
+  <button class="btn btn-outline-success btn-lg" type="submit">Update</button>&ensp;
+  <a class="btn btn-outline-secondary btn-lg" href="{% url 'txout_detail' object.pk %}">Cancel</a>&ensp;
+  <a class="btn btn-outline-danger btn-lg" href="{% url 'txout_delete' object.pk %}">Delete</a>
 </div>
 {% endblock content %}
