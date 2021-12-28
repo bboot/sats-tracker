@@ -16,13 +16,50 @@ $(document).ready(() => {
 });
 
 toggle_icon = (name) => {
-    let icon = document.getElementsByClassName(name)[0];
-    let slash_icon = document.getElementsByClassName("slash-" + name)[0];
-    if (slash_icon.style.display == "none") {
-        slash_icon.style.display = "block";
-        icon.style.display = "none";
+    let on = document.getElementsByClassName(name + "-on")[0];
+    let off = document.getElementsByClassName(name + "-off")[0];
+    let state;
+    if (on.style.display == "none" || on.style.display == "") {
+        on.style.display = "block";
+        off.style.display = "none";
+        state = true; // filter is on
     } else {
-        slash_icon.style.display = "none";
-        icon.style.display = "block";
+        on.style.display = "none";
+        off.style.display = "block";
+        state = false; // filter is off
     }
+    //toggle_filter(name, state);
+}
+
+
+class FilterStates {
+    static filter_states = {
+        "key-filter": false,
+        "spent-filter": false,
+    }
+
+    static state() {
+        for (let key in FilterStates.filter_states) {
+            if (!FilterStates.filter_states[key]) {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+
+toggle_filter = (name, state) => {
+    FilterStates.filter_states[name] = state;
+    const filtered = document.getElementsByClassName(name);
+    const array = Array.from(filtered);
+    array.forEach((item) => {
+        parents = [...(function*(e){while (e = e.parentNode) { yield e; }})(item)]
+        if (FilterStates.state()) {
+            // filter is off, so it should not be filtered
+            parents[5].style.display = "block";
+        } else {
+            // filter is on, so it should be filtered out
+            parents[5].style.display = "none";
+        }
+    });
 }

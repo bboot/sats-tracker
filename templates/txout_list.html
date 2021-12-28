@@ -21,15 +21,12 @@
 {% endblock heading-info %}
 
 {% block content %}
-<div class="main-container">
-  <div class="main-content">
-    {% include "main.html" %}
-  </div>
-</div>
+{% include "main.html" %}
 <div class="button-container">
   <div class="center">
+    {% include "bottom-buttons.html" %}
     <form action="{% url 'txout_new' %}">
-      <button type="submit" class="bottom-button button2">Add</button>
+      <button type="submit" class="bottom-button button2 buttons">Add</button>
     </form>
   </div>
 </div>

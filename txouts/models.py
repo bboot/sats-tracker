@@ -39,7 +39,10 @@ class TxOut(models.Model):
 
     def get_block_time(self):
         data = json.loads(self.data)
-        return data.get("transaction", {}).get("blocktime")
+        blocktime = data.get("transaction", {}).get("blocktime")
+        if not blocktime:
+            print('@@@@@@@@@@@@@@@@@@@@@ blocktime not found', data)
+        return blocktime
 
     @property
     def blocktime(self):

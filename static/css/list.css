@@ -104,6 +104,7 @@
 .buttons {
   font-size: 36px;
   margin: 4px 2px;
+  margin: 4px 2px;
   cursor: pointer;
   -webkit-transition-duration: 0.2s; /* Safari */
   transition-duration: 0.2s;
@@ -120,7 +121,12 @@
   height: 70px;
 }
 
-.dove, .key {
+.key-filter, .key-filter-slash {
+  margin: 0px 0px;
+  font-size: 36px;
+}
+
+.key-filter-on, .spent-filter-on {
   display: none;
 }
 

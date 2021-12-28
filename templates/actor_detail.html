@@ -13,39 +13,13 @@
 <div class="actor-entry">
     <p>{{ object.notes }} </p>
 </div>
-<div class="main-container">
-  <div class="main-content">
-    {% include "main.html" %}
-  </div>
-</div>
+{% include "main.html" %}
 <div class="button-container">
   <div class="center-holder">
-      <span onclick="toggle_icon('dove')"
-            class="fa-stack fa-4x buttons slash-dove"
-            title="Don't show spent transaction outputs">
-        <i class="fas fa-dove fa-stack-1x" style="color: red"></i>
-        <i class="fas fa-slash fa-stack-1x"></i>
-      </span>
-      <span onclick="toggle_icon('dove')"
-            class="fa-stack fa-4x buttons dove"
-            title="Include spent transaction outputs">
-        <i class="fas fa-dove fa-stack-1x" style="color: red"></i>
-      </span>
-    <span onclick="toggle_icon('key')"
-            class="fa-stack fa-1x buttons slash-key"
-            title="Include transaction outputs that I don't own">
-      <i class="fas fa-key fa-stack-1x" style="color: red"></i>
-      <i class="fas fa-slash fa-stack-1x"></i>
-    </span>
-    <span onclick="toggle_icon('key')"
-            class="fa-stack fa-1x buttons key"
-            title="Only show owned transaction outputs">
-      <i class="fas fa-key fa-stack-1x" style="color: green" ></i>
-    </span>
+    {% include "bottom-buttons.html" %}
     <form action="{% url 'txout_list' %}">
       <button type="submit" class="bottom-button button2 buttons">All</button>
     </form>
   </div>
 </div>
 {% endblock content %}
-

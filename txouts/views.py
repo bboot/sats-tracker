@@ -91,12 +91,12 @@ class Tx:
         PrettyPrinter().pprint(vouts)
         for vout in vouts:
             spk = vout['scriptPubKey']
-            if spk['address'] == addr:
+            if spk and spk.get('address', '') == addr:
                 print('Founndddd itttt!')
                 self.amount = int(vout['value'] * SAT)
             else:
                 # debug
-                print(f"{spk['address']} != {addr}")
+                print(f"address '{spk.get('address')}' != {addr}")
         if not self.amount:
             # did not find a vout, this addr has been spent
             self.addr_looks_spent = True
@@ -112,7 +112,7 @@ class Addr:
     def __init__(self, addr, amount):
         self.addr = addr
         self.amount = amount
-        data = Explorer().lookup(addr)
+        data = Explorer().lookup(addr) or []
         self.data = {
             'txs': None,
             'addr': None
@@ -128,6 +128,8 @@ class Addr:
     def lookup_transactions(self):
         self.transactions = []
         txs = self.data["txs"]
+        if not txs:
+            return
         for tx, height in txs["blockHeightsByTxid"].items():
             transaction = TxLookup(tx, self.addr)
             if transaction.addr_looks_spent:
@@ -193,7 +195,7 @@ class ValidateAddrMixin:
     def update_actors(self):
         for actor in self.object.get_actors():
             print('@@@@@@@@@@@@@ actor', actor)
-            actor.add_event(self.object)
+            actor.add_txout(self.object)
 
     def custom_is_valid(self, form):
         '''

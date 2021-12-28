@@ -1,0 +1,26 @@
+    <span onclick="toggle_icon('spent-filter')"
+          class="fa-stack fa-4x buttons dove spent-filter-off"
+          title="Including spent transaction outputs">
+      <!-- when this is toggled on, the spent filter is off -->
+      <i class="fas fa-dove fa-stack-1x" style="color: red"></i>
+    </span>
+    <span onclick="toggle_icon('spent-filter')"
+          class="fa-stack fa-4x buttons slash-dove spent-filter-on"
+          title="Not showing spent transaction outputs">
+      <!-- when this is toggled on, the spent filter is on -->
+      <i class="fas fa-dove fa-stack-1x" style="color: red"></i>
+      <i class="fas fa-slash fa-stack-1x"></i>
+    </span>
+    <span onclick="toggle_icon('key-filter')"
+            class="fa-stack fa-1x buttons slash-key key-filter-off"
+            title="Including transaction outputs that I don't own">
+      <!-- when this is toggled on, the foreign priv key filter is off -->
+      <i class="fas fa-key fa-stack-1x" style="color: red"></i>
+    </span>
+    <span onclick="toggle_icon('key-filter')"
+            class="fa-stack fa-1x buttons key key-filter-on"
+            title="Only showing owned transaction outputs">
+      <!-- when this is toggled on, the foreign priv key filter is on -->
+      <i class="fas fa-key fa-stack-1x" style="color: green" ></i>
+    </span>
+
