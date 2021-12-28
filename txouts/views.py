@@ -86,17 +86,13 @@ class Tx:
         self.dump()
         self.amount = 0
         vouts = self.data.get('vout')
-        print('@@@@@@@@@@@@@@@@TX:', self.data.get("txid"))
-        print('@@@@@@@@@@@@@@@@vouts:')
-        PrettyPrinter().pprint(vouts)
+        #PrettyPrinter().pprint(vouts)
         for vout in vouts:
             spk = vout['scriptPubKey']
             if spk and spk.get('address', '') == addr:
-                print('Founndddd itttt!')
                 self.amount = int(vout['value'] * SAT)
             else:
-                # debug
-                print(f"address '{spk.get('address')}' != {addr}")
+                pass
         if not self.amount:
             # did not find a vout, this addr has been spent
             self.addr_looks_spent = True
@@ -105,7 +101,7 @@ class Tx:
         if 'hex'in self.data:
             # Just not using it now and it looks messy
             del self.data['hex']
-        PrettyPrinter().pprint(self.data)
+        #PrettyPrinter().pprint(self.data)
 
 
 class Addr:
@@ -151,11 +147,9 @@ class Addr:
 def tx_lookup(request):
     post = request.POST.dict()
     addr = AddrLookup(post["address"], post["amount"])
-    print(f'txs found are: {addr.transactions}')
     for tx in addr.transactions:
         if tx["txid"] == post["txid"] and post["amount"] and(
                 str(tx["amount"]) == post["amount"]):
-            print(f'Got the tx!!!! {tx}')
             tx["match"] = True
     # TODO: Indicate something wrong with the addr
     # Present the tx's, which one is it?
@@ -174,7 +168,6 @@ def tx_lookup(request):
 
 class ValidateAddrMixin:
     def post(self, request, *args, **kwargs):
-        print('@@@@@@@@@@@@@@@@@@@@@@@@@ POST!!', request)
         self.object = None
         if kwargs.get('pk'):
             # If 'pk' is present, this is an edit. otherwise it's
@@ -185,16 +178,13 @@ class ValidateAddrMixin:
         if not valid_tx:
             return self.form_invalid(form)
         if self.object:
-            print('@@@@@@@@@@@@@@@ valid_tx', valid_tx)
             self.object.set_data(valid_tx["transaction"].data)
             self.update_actors()
         ret = self.form_valid(form)
-        print('@@@@@@@@@@@@@@@@@@@@@@@@@ returning self.form_valid', ret)
         return ret
 
     def update_actors(self):
         for actor in self.object.get_actors():
-            print('@@@@@@@@@@@@@ actor', actor)
             actor.add_txout(self.object)
 
     def custom_is_valid(self, form):
@@ -227,32 +217,21 @@ class ValidateAddrMixin:
         post = self.request.POST
         addr = AddrLookup(post["address"], post["amount"])
         txs = addr.transactions
-        print(f'UPDATE: txs to sort through: {txs}')
         for tx in txs:
             found = False
-            print('@@@@@@@@@@@@@@@@@@ tx["txid"]', tx["txid"])
-            print('@@@@@@@@@@@@@@@@@@ form.transaction', form.transaction)
             if tx["txid"] == form.transaction:
                 if addr.spent_tx:
-                    print('@@@@@@@@@@@@@@@@@@ addr looks spent')
                     found = True
                 elif form.amount and str(tx["amount"]) == str(form.amount):
                     found = True
-                print('@@@@@@@@@@@@@@@@@@ form.amount', form.amount)
-                print('@@@@@@@@@@@@@@@@@@ tx[amount]', tx["amount"])
-                print('@@@@@@@@@@@@@@@@@@ found', found)
             elif not form.transaction:
                 if form.amount and str(tx["amount"]) == str(form.amount):
-                    print('@@@@@@@@@@@@@@@@@@2 form.amount', form.amount)
-                    print('@@@@@@@@@@@@@@@@@@2 tx[amount]', tx["amount"])
                     found = True
             if found:
-                print(f'Got the tx!!!! {tx}')
                 tx["match"] = True
                 form.height = str(tx["height"])
                 form.save()
                 return tx
-        print('@@@@@@@@@@@@@@@@@ rrturning NONE!!')
         return None
 
 

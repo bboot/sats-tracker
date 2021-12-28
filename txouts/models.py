@@ -39,10 +39,7 @@ class TxOut(models.Model):
 
     def get_block_time(self):
         data = json.loads(self.data)
-        blocktime = data.get("transaction", {}).get("blocktime")
-        if not blocktime:
-            print('@@@@@@@@@@@@@@@@@@@@@ blocktime not found', data)
-        return blocktime
+        return data.get("transaction", {}).get("blocktime")
 
     @property
     def blocktime(self):
@@ -75,7 +72,6 @@ class TxOut(models.Model):
         elif "txCount" in data:
             key = "addr-details"
         else:
-            print("Not sure what data this is:", data)
             key = "not-sure"
         data_json = json.loads(self.data)
         existing = data_json.get(key)
@@ -139,7 +135,6 @@ class Actor(models.Model):
 
     def get_txouts(self):
         for transaction in self.txouts.all():
-            print(transaction)
             yield transaction
 
     def add_txout(self, txout):
