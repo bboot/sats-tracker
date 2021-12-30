@@ -280,8 +280,7 @@ class ActorCreateView(CreateView):
     )
 
     def get_success_url(self):
-        actor = self.get_object()
-        return reverse("actor_detail", kwargs={"pk": actor.pk})
+        return reverse("actor_list")
 
 
 class ActorUpdateView(UpdateView):

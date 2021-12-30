@@ -4,11 +4,11 @@
 {% block title %}Edit {{ object }}{% endblock title %}
 
 {% block content %}
-<form action="" method="post">{% csrf_token %}
+<form id="main" action="" method="post">{% csrf_token %}
   {{ form|crispy }}
 </form>     
 <div class="container">
-  <button class="btn btn-outline-success btn-lg" type="submit">Update</button>&ensp;
+  <button class="btn btn-outline-success btn-lg" form="main" type="submit">Update</button>&ensp;
   <a class="btn btn-outline-secondary btn-lg" href="{% url 'actor_detail' object.pk %}">Cancel</a>&ensp;
   <a class="btn btn-outline-danger btn-lg" href="{% url 'actor_delete' object.pk %}">Delete</a>
 </div>
