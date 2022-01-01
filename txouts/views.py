@@ -30,14 +30,32 @@ class TxOutListView(ListView):
         return super().get(request, *args, **kwargs)
 
     def get_queryset(self, *args, **kwargs):
+        '''
+        Normally I would like to do this:
+            qs = qs.order_by("height")
+        But alas, the data is encrypted so these kinds of operations
+        have to be done using custom code.
+        '''
         qs = super().get_queryset(*args, **kwargs)
-        qs = qs.order_by("height")
-        return qs
+        return sorted(qs, key=lambda x: x.encrypted_height)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['actors'] = ActorListView().get_queryset()
         return context
+
+    def one_time_migration_001(self):
+        for item in TxOut.objects.values():
+            item['encrypted_address'] = item['address']
+            item['encrypted_transaction'] = item['transaction']
+            item['encrypted_notes'] = item['notes']
+            item['encrypted_amount'] = item['amount']
+            item['encrypted_height'] = item['height']
+            item['encrypted_spent_tx'] = item['spent_tx']
+            item['encrypted_data'] = item['data']
+            item['unique_key'] = item['address'] + ' ' + item['transaction']
+            txout = TxOut(**item)
+            txout.save()
 
 
 class AddrLookup:

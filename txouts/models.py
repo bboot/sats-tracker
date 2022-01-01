@@ -1,37 +1,58 @@
 import datetime as dt
 from django.db import models
 from django.urls import reverse
+from encrypted_fields import fields
+from environs import Env
 import json
+from pathlib import Path
 
 from txouts.icons import Animal
+
+env = Env()
+env.read_env()
 
 
 # Create your models here.
 class TxOut(models.Model):
     '''
-    TODO: Entries must be a unique combo of tx and address
+    Entries are a unique combo of tx and address
+    TODO: "*" will replace "encrypted_*" once it all works.
     '''
+    # XXX: for encrypted fields blank is ok for now
+    _unique_key_data = fields.EncryptedCharField(blank=True, max_length=100)
+    unique_key = fields.SearchField(hash_key=env.str("TXOUT_UNIQUE_KEY"),
+            encrypted_field_name='_unique_key_data', unique=True)
     address = models.CharField(max_length=100)
+    # need address since it's entered in the form
+    # TODO: should consolidate this and transaction to unique_key
+    encrypted_address = fields.EncryptedCharField(max_length=100, blank=True)
     notes = models.TextField(blank=True)
+    encrypted_notes = fields.EncryptedTextField(blank=True)
     actors = models.ManyToManyField("txouts.Actor")
     txins = models.ManyToManyField("txouts.TxOut", blank=True)
     amount = models.BigIntegerField()
+    encrypted_amount = fields.EncryptedBigIntegerField(default=0)
     height = models.IntegerField(default=1)
+    encrypted_height = fields.EncryptedIntegerField(default=1)
     owned = models.BooleanField(default=True)
     # We need to record the transaction because the address
     # is often used in more than one.
     # Are transactions always 65 chars?
     # This can be left blank as it will be looked up anyways.
     transaction = models.CharField(max_length=100, blank=True)
+    encrypted_transaction = fields.EncryptedCharField(max_length=100, blank=True)
     spent_tx = models.CharField(max_length=100, blank=True)
+    encrypted_spent_tx = fields.EncryptedCharField(max_length=100, blank=True)
     # Don't get too dependent on JSONField or anything, since
     # we are going to store this encrypted later.
     # May want to use BinaryField
     # I think data will be:
     # { 'transaction': tx_dict, 'addr-details': details_dict }
     data = models.TextField(default="{}")
+    encrypted_data = fields.EncryptedTextField(default="{}")
 
     class Meta:
+        # this will go away in favor of "unique_key"
         unique_together = ('address', 'transaction')
 
     def __init__(self, *args, **kwargs):
@@ -43,6 +64,10 @@ class TxOut(models.Model):
 
     @property
     def blocktime(self):
+        '''
+        XXX: These "properties" should go in the View class,
+        under get_context_data
+        '''
         blocktime = self.get_block_time()
         if not blocktime:
             return ""
