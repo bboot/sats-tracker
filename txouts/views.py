@@ -37,7 +37,7 @@ class TxOutListView(ListView):
         have to be done using custom code.
         '''
         qs = super().get_queryset(*args, **kwargs)
-        return sorted(qs, key=lambda x: x.encrypted_height)
+        return sorted(qs, key=lambda x: x.height)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
