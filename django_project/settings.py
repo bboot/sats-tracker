@@ -45,8 +45,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'crispy_forms',
     'crispy_bootstrap5',
-    'txouts.apps.TxOutsConfig',
     'node.apps.NodeConfig',
+    'txouts.apps.TxOutsConfig',
+    'user_profile.apps.UserProfileConfig',
 ]
 
 # A list of hex-encoded 32 byte keys
@@ -144,3 +145,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+LOGIN_REDIRECT_URL = "txout_list"
+LOGOUT_REDIRECT_URL = "txout_list"
+
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher'
+]

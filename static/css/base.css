@@ -122,9 +122,16 @@ img {
 
 .actor-icon {
   font-size: 36px;
-  text-decoration: none; /* this doesn't get the underline out */
+  text-decoration: none; /* this gets the underline out */
 }
 
 .fa-check {
   color: green;
+}
+
+#profile {
+  float: right;
+  background-color: #609CE1;
+  color: white;
+  font-size: 25px;
 }
