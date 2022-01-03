@@ -11,10 +11,9 @@
 </head>
 <body>
   <div class="topnav">
-    <a href="{% url 'txout_list' %}">Transactions</a>
+    <a class="active" href="{% url 'txout_list' %}">Transactions</a>
     <a href="{% url 'actor_list' %}">Actors</a>
     <a href="{% url 'node' %}">Node</a>
-    <a class="fas fa-user" id="profile" href="{% url 'profile' %}"></a>
   </div>
 
   <div id="title-bar">
@@ -25,12 +24,8 @@
     {% block heading-info %}
     {% endblock heading-info %}
   </div>
-  {% if user.is_authenticated %}
-    {% block content %}
-    {% endblock content %}
-  {% else %}
-    <p>You are not logged in.</p>
-    <a href="{% url 'login' %}">Log In</a>
-  {% endif %}
+  {% block content %}
+  {% endblock content %}
 </body>
 </html>
+
