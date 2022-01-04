@@ -93,6 +93,7 @@ class TxOut(models.Model):
         else:
             data_json[key] = data
         self.data = json.dumps(data_json)
+        self.unique_key = self.address + ' ' + self.transaction
 
     def get_actors(self):
         for actor in self.actors.all():
