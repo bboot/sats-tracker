@@ -24,8 +24,9 @@ class TxOut(models.Model):
             encrypted_field_name='_unique_key_data', unique=True)
     # need address since it's entered in the form
     # TODO: should consolidate this and transaction to unique_key
-    address = fields.EncryptedCharField(max_length=100)
-    notes = fields.EncryptedTextField()
+    # address can be blank to allow lookup if transaction is present
+    address = fields.EncryptedCharField(max_length=100, blank=True)
+    notes = fields.EncryptedTextField(blank=True)
     actors = models.ManyToManyField("txouts.Actor")
     amount = fields.EncryptedBigIntegerField()
     height = fields.EncryptedIntegerField(default=1)

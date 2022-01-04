@@ -74,16 +74,17 @@ class AddrLookup:
 
 class TxLookup:
     cache = {} # XXX Not thread safe
-    def __new__(cls, tx, addr):
-        obj = cls.cache.get((tx, addr))
+    def __new__(cls, tx, addr=None, value=None):
+        obj = cls.cache.get((tx, addr, value))
         if obj:
             return obj
-        obj = Tx(tx, addr)
-        cls.cache[(tx, addr)] = obj
+        obj = Tx(tx, addr, value)
+        if obj.addr and obj.amount is not None:
+            cls.cache[(tx, obj.addr, obj.amount)] = obj
         return obj
 
 
-SAT = 100000000
+COIN = 100000000
 class Tx:
     '''
     Looking up transactions identified by :tx: that have already been
@@ -94,31 +95,48 @@ class Tx:
 
     This is not organized right
     '''
-    def __init__(self, tx, addr):
+    def __init__(self, tx, addr=None, value=None):
+        if value:
+            value = int(value)
         self.tx = tx
+        assert addr or value, 'Need one of address or value'
         self.addr = addr
         data = Explorer().lookup(tx)
         self.data = data
         self.addr_looks_spent = False
-        self.dump()
-        self.amount = 0
+        if 'hex'in self.data:
+            # Just not using it now and it looks messy, not storing it
+            # either, can be looked up if needed. If I need it I will
+            # have to revisit this.
+            del self.data['hex']
+        #self.dump()
+        self.amount = None
         vouts = self.data.get('vout')
         #PrettyPrinter().pprint(vouts)
+        # This is more speculative, get the address from the
+        # transaction and the value. There could be more than
+        # one match, need to handle that.
         for vout in vouts:
-            spk = vout['scriptPubKey']
-            if spk and spk.get('address', '') == addr:
-                self.amount = int(vout['value'] * SAT)
-            else:
-                pass
-        if not self.amount:
+            scriptpk = vout['scriptPubKey']
+            if addr:
+                if scriptpk and scriptpk.get('address', '') == addr:
+                    self.amount = int(float(vout['value']) * COIN)
+            elif value:
+                if int(float(vout['value']) * COIN) == value:
+                    self.amount = value
+                    # In particular, this won't work for cahoots
+                    # spends since there is a pair of equal value
+                    # addresses created
+                    # Need to collect them all and let user choose
+                    # it, XXX punt on that for now though
+                    self.addr = scriptpk.get('address', '')
+        if self.amount is None:
             # did not find a vout, this addr has been spent
             self.addr_looks_spent = True
+            self.amount = 0
 
     def dump(self):
-        if 'hex'in self.data:
-            # Just not using it now and it looks messy
-            del self.data['hex']
-        #PrettyPrinter().pprint(self.data)
+        PrettyPrinter().pprint(self.data)
 
 
 class Addr:
@@ -163,7 +181,16 @@ class Addr:
 # api
 def tx_lookup(request):
     post = request.POST.dict()
-    addr = AddrLookup(post["address"], post["amount"])
+    addr = None
+    if post["address"]:
+        addr = AddrLookup(post["address"], post["amount"])
+    elif post["txid"]:
+        tx = TxLookup(post["txid"], value=post["amount"])
+        if tx:
+            assert tx.addr, f'Why is {tx.addr} not set?'
+            addr = AddrLookup(tx.addr, post["amount"])
+    if not addr:
+        return HttpResponse(json.dumps({ "data": {} }))
     for tx in addr.transactions:
         if tx["txid"] == post["txid"] and post["amount"] and(
                 str(tx["amount"]) == post["amount"]):
@@ -176,6 +203,7 @@ def tx_lookup(request):
         del tx["transaction"]
     payload = {
         'data': {
+            'address': addr.addr,
             'spent_tx': addr.spent_tx,
             'transactions': payload_txs,
         }
