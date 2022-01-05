@@ -79,7 +79,7 @@ class TxLookup:
         if obj:
             return obj
         obj = Tx(tx, addr, value)
-        if obj.addr and obj.amount is not None:
+        if obj.addr and obj.amount is not None and obj.data:
             cls.cache[(tx, obj.addr, obj.amount)] = obj
         return obj
 
@@ -219,11 +219,11 @@ class ValidateAddrMixin:
             # a new.
             self.object = self.get_object()
         form = self.get_form()
-        valid_tx = self.custom_is_valid(form)
-        if not valid_tx:
+        self.valid_tx = self.custom_is_valid(form)
+        if not self.valid_tx:
             return self.form_invalid(form)
         if self.object:
-            self.object.set_data(valid_tx["transaction"].data)
+            self.object.set_data(self.valid_tx["transaction"].data)
             self.update_actors()
         ret = self.form_valid(form)
         return ret
@@ -292,6 +292,13 @@ class TxOutCreateView(ValidateAddrMixin, CreateView):
         "owned",
         "transaction",
     )
+
+    def get_success_url(self):
+        if self.valid_tx and self.object:
+            self.object.set_data(self.valid_tx["transaction"].data)
+            self.update_actors()
+            self.object.save()
+        return super().get_success_url()
 
 
 class TxOutUpdateView(ValidateAddrMixin, UpdateView):
