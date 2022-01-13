@@ -62,11 +62,14 @@ class AddrLookup:
     def __new__(cls, addr, amount):
         obj = cls.cache.get(addr)
         if obj:
+            needs_refresh = False
             # do some verification, otherwise, re-get it
             txs = obj.transactions
             for tx in txs:
-                if tx["amount"] is not None:
-                    return obj
+                if int(tx["height"]) == 0:
+                   needs_refresh = True
+            if not needs_refresh:
+                return obj
         obj = Addr(addr, amount)
         cls.cache[addr] = obj
         return obj
@@ -79,7 +82,7 @@ class TxLookup:
         if obj:
             return obj
         obj = Tx(tx, addr, value)
-        if obj.addr and obj.amount is not None and obj.data:
+        if obj.addr and obj.amount is not None and obj.data and obj.confirmations > 0:
             cls.cache[(tx, obj.addr, obj.amount)] = obj
         return obj
 
@@ -118,13 +121,15 @@ class Tx:
         # one match, need to handle that.
         for vout in vouts:
             scriptpk = vout['scriptPubKey']
+            if not scriptpk:
+                continue
             if addr:
-                if scriptpk and scriptpk.get('address', '') == addr:
+                if scriptpk.get('address', '') == addr:
                     self.amount = int(float(vout['value']) * COIN)
             elif value:
                 if int(float(vout['value']) * COIN) == value:
                     self.amount = value
-                    # In particular, this won't work for cahoots
+                    # In particular, this won't work for stonewall
                     # spends since there is a pair of equal value
                     # addresses created
                     # Need to collect them all and let user choose
@@ -134,6 +139,7 @@ class Tx:
             # did not find a vout, this addr has been spent
             self.addr_looks_spent = True
             self.amount = 0
+        self.confirmations = int(self.data.get('confirmations', 0))
 
     def dump(self):
         PrettyPrinter().pprint(self.data)
