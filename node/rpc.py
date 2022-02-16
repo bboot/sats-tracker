@@ -9,7 +9,7 @@ class BitcoinRpc(bitcoin.rpc.Proxy):
     def __init__(self):
         if not self.initialized:
             BitcoinRpc.initialize()
-            super().__init__(service_url=self.url)
+        super().__init__(service_url=self.url)
 
     @classmethod
     def initialize(cls):
@@ -25,3 +25,4 @@ class BitcoinRpc(bitcoin.rpc.Proxy):
         host = env.str("BITCOIND_HOST", default="localhost")
         bitcoin.SelectParams(network)
         cls.url = f"http://{rpc_user}:{rpc_password}@{host}:{rpc_port}"
+        cls.initialized = True

@@ -170,8 +170,9 @@ class Addr:
         for tx, height in txs["blockHeightsByTxid"].items():
             transaction = TxLookup(tx, self.addr)
             if transaction.addr_looks_spent:
-                assert txs["balanceSat"] == "0",\
-                        f"Address {self.addr} looked spent"
+                # XXX The cached one can cause problem here.
+                #assert txs["balanceSat"] == "0",\
+                #        f"Address {self.addr} looked spent"
                 self.spent_tx = tx
             # These are returned in the tx_lookup api
             self.transactions.append({
