@@ -13,7 +13,9 @@ from pprint import PrettyPrinter
 import traceback
 
 from .models import TxOut, Actor
+from node.electrum import ElectrumClient
 from node.explorer import Explorer
+from node.rpc import BitcoinRpc
 
 # Create your views here.
 class TxOutDetailView(DetailView):
@@ -89,6 +91,7 @@ class TxLookup:
 
 COIN = 100000000
 class Tx:
+    use_explorer = False
     '''
     Looking up transactions identified by :tx: that have already been
     associated with :addr:
@@ -104,7 +107,7 @@ class Tx:
         self.tx = tx
         assert addr or value, 'Need one of address or value'
         self.addr = addr
-        data = Explorer().lookup(tx)
+        data = self.lookup(tx)
         self.data = data
         self.addr_looks_spent = False
         if 'hex'in self.data:
@@ -141,15 +144,29 @@ class Tx:
             self.amount = 0
         self.confirmations = int(self.data.get('confirmations', 0))
 
-    def dump(self):
-        PrettyPrinter().pprint(self.data)
+    def lookup(self, tx):
+        if self.use_explorer:
+            return Explorer().lookup(tx)
+        try:
+            rpc = BitcoinRpc()
+            output = rpc.call('getrawtransaction', tx, True)
+            return output
+        except Exception as e:
+            e = eval(str(e))
+            print(e['message'])
+        return None
+
+        def dump(self):
+            PrettyPrinter().pprint(self.data)
 
 
 class Addr:
+    use_explorer = False
+
     def __init__(self, addr, amount):
         self.addr = addr
         self.amount = amount
-        data = Explorer().lookup(addr) or []
+        data = self.lookup(addr)
         self.data = {
             'txs': None,
             'addr': None
@@ -161,6 +178,19 @@ class Addr:
             elif "isvalid" in item:
                 self.data["addr"] = item
         self.lookup_transactions()
+
+    def lookup(self, addr):
+        if self.use_explorer:
+            return Explorer().lookup(addr) or []
+        rpc = BitcoinRpc()
+        validateaddress = rpc.call('validateaddress', addr)
+        pk = validateaddress.get('scriptPubKey', '')
+        if not pk:
+            print(f'Did not find the script pub key to {addr}')
+            return []
+        with ElectrumClient() as electrum:
+            addressDetails = electrum.get_details(pk)
+        return [validateaddress, addressDetails]
 
     def lookup_transactions(self):
         self.transactions = []

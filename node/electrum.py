@@ -1,22 +1,53 @@
 #!/usr/bin/env python3
 import asyncio
+from environs import Env
+import hashlib
 import json
 import logging
 import sys
 
+env = Env()
+env.read_env()
+
 
 class ElectrumClient:
+    services = []
     msg_id = 0
     cached = {}
 
-    def __init__(self, host='127.0.0.1', port=50001):
-        self.host = host
-        self.port = port
+    def __init__(self, host=None, port=None):
+        self.parse_services()
+        tcps = list(filter(None, map(
+            lambda s: s if s['protocol'] == 'tcp' else None, self.services)))
+        tcp = tcps[0] # just get the first one
+        self.host = host or tcp['host']
+        self.port = port or tcp['port']
         self.reader = None
         self.writer = None
         self.name = None
-        self.loop = asyncio.get_event_loop()
-        self.request('server.version', 'sats-tracker', '1.4')
+        self.loop = self.get_or_create_eventloop()
+        response = self.request('server.version', 'sats-tracker', '1.4')
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        try:
+            self.close()
+        except:
+            pass
+
+    def close(self):
+        self.writer.close()
+
+    def get_or_create_eventloop(self):
+        try:
+            return asyncio.get_event_loop()
+        except RuntimeError as ex:
+            if "There is no current event loop in thread" in str(ex):
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+        return asyncio.get_event_loop()
 
     def request(self, method, *args, **kwargs):
         response = self.loop.run_until_complete(
@@ -62,17 +93,55 @@ class ElectrumClient:
         self.cached[request] = data
         return json.loads(data)
 
-    def __enter__(self):
-        return self
+    def get_details(self, pk):
+        '''
+        This will produce the same output that btc-rpc-explorer produces
+        '''
+        details = {}
+        pk_hash = self.pubkey_hash(pk)
+        #print(f'hash of pubkey is {pk_hash}')
+        response = self.request('blockchain.scripthash.get_history', pk_hash)
+        result = response.get('result')
+        if result:
+            result.reverse()
+            details['txCount'] = len(result)
+            details['txids'] = [t['tx_hash'] for t in result]
+            details['blockHeightsByTxid'] = {
+                t['tx_hash']: t['height'] for t in result
+            }
+            details['balanceSat'] = 0
+        response = self.request('blockchain.scripthash.get_balance', pk_hash)
+        result = response.get('result')
+        if result:
+            details['balanceSat'] = result['confirmed']
+        return details
 
-    def __exit__(self, exc_type, exc_value, traceback):
-        try:
-            self.close()
-        except:
-            pass
+    def reverse_hex(self, hexstr):
+        it = iter(hexstr)
+        items = [a + b for a, b in zip(it, it)]
+        items.reverse()
+        return ''.join(items)
 
-    def close(self):
-        self.writer.close()
+    def pubkey_hash(self, pk):
+        # should assert if invalid hex or length
+        hexstr = hashlib.sha256(bytes.fromhex(pk)).hexdigest()
+        return self.reverse_hex(hexstr)
+
+    def parse_services(self):
+        if self.services:
+            return self.services
+        # ELECTRUM_SERVICES=rpc://localhost:8000,tcp://umbrel.local:50001
+        svc = env.str('ELECTRUM_SERVICES', 'tcp://localhost:50001').split(',')
+        for service in svc:
+            try:
+                protocol, host, port = service.split(':')
+                self.services.append({
+                    'protocol': protocol,
+                    'host': host.split('//')[1],
+                    'port': int(port),
+                })
+            except Exception as e:
+                print(f'error parsing {service}')
 
 
 def main(args=None):
