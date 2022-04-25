@@ -150,6 +150,9 @@ class Tx:
         try:
             rpc = BitcoinRpc()
             output = rpc.call('getrawtransaction', tx, True)
+            vouts = output.get('vout', [])
+            for vout in vouts:
+                vout['value'] = float(vout['value'])
             return output
         except Exception as e:
             e = eval(str(e))
