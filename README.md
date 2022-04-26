@@ -1,5 +1,7 @@
 Sats Tracker
 ==
+Installation:
+
 TODO:
-- consolidate to python-bitcoinlib
-- 
+- add search function
+- use BDK for watch-only wallets
