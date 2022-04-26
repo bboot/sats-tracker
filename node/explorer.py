@@ -1,6 +1,10 @@
 from environs import Env
 import json
-from lxml import etree, html
+try:
+    from lxml import etree, html
+except:
+    print("If `pip install lxml` doesn't work, then you won't"
+          " be able to use Bitcoin Explorer in place of Electrum")
 import requests
 
 class Explorer:
