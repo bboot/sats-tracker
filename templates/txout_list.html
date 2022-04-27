@@ -10,7 +10,7 @@
 {% block title %}Transactions{% endblock title %}
 
 {% block heading-info %}
-  <div class="heading-text">All the transactions, bro</div>
+  <div class="heading-text">All the transactions</div>
   <div class="actors-filter">
     {% for actor in actors %}
       <button class="actor-button actor-icon" href="{% url 'actor_detail' actor.pk %}">
