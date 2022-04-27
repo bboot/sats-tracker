@@ -3,6 +3,7 @@ import argparse
 import os
 from pathlib import Path
 import secrets
+import stat
 import sys
 
 
@@ -27,7 +28,8 @@ export EXPLORER=http://umbrel.local:3002
     return content
 
 def get_pg_setup_txt(args, data):
-    postgres_setup_txt=f'''
+    postgres_setup_txt=f'''#!/bin/sh
+sudo -u postgres psql -c "CREATE DATABASE sats_tracker;"
 sudo -u postgres psql -c "
 CREATE USER sats_trackeruser WITH PASSWORD \'{data['user_password']}\';
 ALTER ROLE sats_trackeruser SET client_encoding TO 'utf8';
@@ -63,6 +65,8 @@ def main(args):
         return 1
     with open(pgsetup, 'w') as f:
         f.write(get_pg_setup_txt(args, data))
+    st = os.stat(pgsetup)
+    os.chmod(pgsetup, st.st_mode | stat.S_IEXEC)
     return 0
 
 

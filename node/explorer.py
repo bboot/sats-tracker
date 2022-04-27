@@ -3,8 +3,9 @@ import json
 try:
     from lxml import etree, html
 except:
-    print("If `pip install lxml` doesn't work, then you won't"
-          " be able to use Bitcoin Explorer in place of Electrum")
+    # If `pip install lxml` doesn't work, then you won't
+    # be able to use Bitcoin Explorer in place of Electrum
+    pass
 import requests
 
 class Explorer:
