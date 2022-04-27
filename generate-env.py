@@ -3,6 +3,7 @@ import argparse
 import os
 from pathlib import Path
 import secrets
+import socket
 import stat
 import sys
 
@@ -24,6 +25,7 @@ export BITCOIN_NETWORK=mainnet
 export ELECTRUM_SERVICES=rpc://{args.electrum_host}:8000,tcp://{args.electrum_host}:50001
 # To use Bitcoin Explorer instead of Electrum, for example from umbrel:
 export EXPLORER=http://umbrel.local:3002
+export ALLOWED_HOSTS=localhost,127.0.0.1,{socket.gethostname()}
 """
     return content
 
