@@ -11,7 +11,8 @@ def get_content(args, data):
 export SECRET_KEY={data['secret_key']}
 export TXOUT_UNIQUE_KEY={data['txout_unique_key']}
 export FIELD_ENCRYPTION_KEYS={data['field_encryption_keys']}
-export DATABASE_URL=postgres://sats_trackeruser:{data['user_password']}@{args.hostname}:5432/sats_tracker
+export DB_PASSWORD={data['user_password']}
+export DATABASE_URL=postgres://sats_trackeruser:$DB_PASSWORD@{args.hostname}:5432/sats_tracker
 # Bitcoind
 export RPC_PORT=8332
 export RPC_USER=<RPC user from your bitcoin core installation>
