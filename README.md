@@ -1,6 +1,6 @@
 Sats Tracker
 ==
-This is a python-django app, so it is in-browser, but intended to run on a local computer, not in the cloud, unless you don't mind putting your private information at risk (not recommended). All data is stored encrypted on-disk.
+This is a python-django app, intended to run in a local network, not in the cloud, as it stores private information. A good place to install it is on a local computer or an umbrel. All data is stored encrypted on-disk.
 
 This version connects to electrum and bitcoin core to look up bitcoin addresses and transactions that are entered. Everything after that is manual right now. The data is collected in two categories: "txouts" and "actors". The point of this project is to link txouts to "actors" (for lack of a better name) so that the users track exactly how much information is theoretically available to surveillance analytics.
 
