@@ -24,6 +24,14 @@ def txout_detail_json(request, pk):
     serializer = TxOutSerializer(txout)
     return JsonResponse(serializer.data)
 
+@api_view(['GET'])
+def txout_backup_json(request):
+    # this should require password to encrypt the response, and
+    # let it be a download file
+    txouts = TxOut.objects.all()
+    serializer = TxOutSerializer(txouts, many=True)
+    return JsonResponse(serializer.data, safe=False)
+
 
 # Create your views here.
 class TxOutDetailView(DetailView):
