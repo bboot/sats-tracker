@@ -5,6 +5,7 @@ from encrypted_fields import fields
 from environs import Env
 import json
 from pathlib import Path
+from rest_framework import serializers
 
 from txouts.icons import Animal
 
@@ -169,3 +170,30 @@ class Actor(models.Model):
 
     def get_absolute_url(self):
         return reverse("txout_list", args=[str(self.id)])
+
+
+class ActorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Actor
+        fields = (
+            'name',
+            'notes',
+            'txouts',
+            'counterparty',
+        )
+
+
+class TxOutSerializer(serializers.ModelSerializer):
+    actors = ActorSerializer(many=True)
+    class Meta:
+        model = TxOut
+        fields = (
+            'address',
+            'notes',
+            'amount',
+            'height',
+            'owned',
+            'transaction',
+            'spent_tx',
+            'actors',
+        )

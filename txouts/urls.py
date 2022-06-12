@@ -12,10 +12,12 @@ from .views import (
         ActorUpdateView,
         ActorDeleteView,
         tx_lookup,
+        txout_detail_json,
     )
 
 urlpatterns = [
     path('<int:pk>/', TxOutDetailView.as_view(), name="txout_detail"),
+    path('api/<int:pk>/', txout_detail_json, name="txout_detail_json"),
     path('new/', TxOutCreateView.as_view(), name="txout_new"),
     path('edit/<int:pk>/', TxOutUpdateView.as_view(), name="txout_edit"),
     path('delete/<int:pk>/', TxOutDeleteView.as_view(), name="txout_delete"),

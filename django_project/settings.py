@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     'crispy_forms',
+    'rest_framework',
     'crispy_bootstrap5',
     'node.apps.NodeConfig',
     'txouts.apps.TxOutsConfig',

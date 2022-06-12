@@ -1,5 +1,5 @@
 from datetime import datetime
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
         DetailView,
@@ -11,11 +11,19 @@ from django.views.generic import (
 import json
 from pprint import PrettyPrinter
 import traceback
+from rest_framework.decorators import api_view
 
-from .models import TxOut, Actor
+from .models import TxOut, Actor, TxOutSerializer, ActorSerializer
 from node.electrum import ElectrumClient
 from node.explorer import Explorer
 from node.rpc import BitcoinRpc
+
+@api_view(['GET'])
+def txout_detail_json(request, pk):
+    txout = TxOut.objects.get(id=pk)
+    serializer = TxOutSerializer(txout)
+    return JsonResponse(serializer.data)
+
 
 # Create your views here.
 class TxOutDetailView(DetailView):
